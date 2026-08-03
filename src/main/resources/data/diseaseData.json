@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Acute Respiratory Infection",
+    "type": "Airborne",
+    "description": "Inflammation of the respiratory tract caused by viruses or bacteria.",
+    "transmission": ["Inhalation of infected droplets", "Contact with contaminated surfaces"],
+    "symptoms": ["Cough", "Sore throat", "Runny nose", "Fever"],
+    "precautions": ["Wear N95 mask when AQI > 150", "Avoid crowded places"],
+    "ayurvedicRemedies": [
+      {
+        "title": "Steam Inhalation",
+        "description": "Add a few drops of eucalyptus oil to hot water and inhale the steam for 5-10 minutes.",
+        "ingredients": ["Eucalyptus oil", "Hot water"]
+      },
+      {
+        "title": "Tulsi-Ginger Tea",
+        "description": "Boil 5-6 tulsi leaves, a small piece of ginger, and a pinch of black pepper in water. Drink twice daily.",
+        "ingredients": ["Tulsi leaves", "Ginger", "Black pepper"]
+      }
+    ],
+    "firstAid": ["Sit upright", "Use a humidifier", "Drink warm fluids"],
+    "whenToSeeDoctor": "If breathing difficulty worsens or fever persists beyond 3 days."
+  },
+  {
+    "name": "Asthma",
+    "type": "Airborne",
+    "description": "Chronic condition where airways narrow and swell, causing breathing difficulty.",
+    "transmission": ["Not contagious", "Triggered by allergens, pollution"],
+    "symptoms": ["Wheezing", "Shortness of breath", "Chest tightness"],
+    "precautions": ["Use inhaler as prescribed", "Avoid outdoor activities during high AQI"],
+    "ayurvedicRemedies": [
+      {
+        "title": "Turmeric Milk",
+        "description": "Mix 1 tsp turmeric in warm milk and drink before bed.",
+        "ingredients": ["Turmeric", "Milk"]
+      }
+    ],
+    "firstAid": ["Sit upright", "Take prescribed reliever inhaler"],
+    "whenToSeeDoctor": "If inhaler does not help or symptoms worsen."
+  },
+  {
+    "name": "Typhoid",
+    "type": "Waterborne",
+    "description": "Bacterial infection spread through contaminated food/water.",
+    "transmission": ["Contaminated water", "Unhygienic food"],
+    "symptoms": ["Fever", "Headache", "Stomach pain"],
+    "precautions": ["Drink boiled water", "Wash hands frequently"],
+    "ayurvedicRemedies": [
+      {
+        "title": "Giloy Juice",
+        "description": "Drink 10-15 ml Giloy juice daily to boost immunity.",
+        "ingredients": ["Giloy stem"]
+      }
+    ],
+    "firstAid": ["Rest", "Drink ORS solution"],
+    "whenToSeeDoctor": "If fever persists more than 3 days."
+  }
+]

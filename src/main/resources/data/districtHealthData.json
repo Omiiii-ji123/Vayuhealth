@@ -1,0 +1,29 @@
+[
+  {
+    "district": "Thane",
+    "state": "Maharashtra",
+    "disease": "Acute Respiratory Infection",
+    "type": "Airborne",
+    "severity": "High",
+    "casesPercentage": 9.2,
+    "lastUpdated": "2026-07-15T10:00:00.000+00:00"
+  },
+  {
+    "district": "Thane",
+    "state": "Maharashtra",
+    "disease": "Typhoid",
+    "type": "Waterborne",
+    "severity": "Moderate",
+    "casesPercentage": 5.3,
+    "lastUpdated": "2026-07-15T10:00:00.000+00:00"
+  },
+  {
+    "district": "Thane",
+    "state": "Maharashtra",
+    "disease": "Asthma",
+    "type": "Airborne",
+    "severity": "High",
+    "casesPercentage": 7.8,
+    "lastUpdated": "2026-07-15T10:00:00.000+00:00"
+  }
+]
