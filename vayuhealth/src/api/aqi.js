@@ -2,13 +2,40 @@ import client from './client';
 
 // 1. AQI Controller — /api/aqi
 
-/** GET /api/aqi/city/{cityName} — Retrieve AQI data for a specific city */
+/** GET /api/aqi/city/{cityName} */
 export const getAqiByCity = (cityName) =>
-  client.get(`/api/aqi/city/${encodeURIComponent(cityName)}`).then((r) => r.data);
+  client
+    .get(`/api/aqi/city/${encodeURIComponent(cityName)}`)
+    .then((r) => r.data);
 
-/** GET /api/aqi/coords?lat=&lon= — Retrieve AQI data using latitude and longitude */
-export const getAqiByCoords = (lat, lon) =>
-  client.get('/api/aqi/coords', { params: { lat, lon } }).then((r) => r.data);
 
-/** GET /api/aqi/all — Retrieve all available AQI records */
-export const getAllAqi = () => client.get('/api/aqi/all').then((r) => r.data);
+/** GET /api/aqi/location?lat=&lng=
+ * Retrieve AQI for the user's current location.
+ */
+export const getAqiByLocation = (lat, lng) =>
+  client
+    .get('/api/aqi/location', {
+      params: { lat, lng },
+    })
+    .then((r) => r.data);
+
+
+/** GET /api/aqi/coords?lat=&lng=
+ * Backwards-compatible endpoint.
+ *
+ * Kept because AirQualityMap.jsx and potentially
+ * other existing components still use getAqiByCoords.
+ */
+export const getAqiByCoords = (lat, lng) =>
+  client
+    .get('/api/aqi/coords', {
+      params: { lat, lng },
+    })
+    .then((r) => r.data);
+
+
+/** GET /api/aqi/all */
+export const getAllAqi = () =>
+  client
+    .get('/api/aqi/all')
+    .then((r) => r.data);
