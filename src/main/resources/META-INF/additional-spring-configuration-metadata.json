@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "aqi.waqi.token",
+    "type": "java.lang.String",
+    "description": "A description for 'aqi.waqi.token'"
+  },
+  {
+    "name": "aqi.waqi.base-url",
+    "type": "java.lang.String",
+    "description": "A description for 'aqi.waqi.base-url'"
+  }
+]}
