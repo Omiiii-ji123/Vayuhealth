@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --color-bg: #F6F8F7;
+  --color-surface: #FFFFFF;
+  --color-border: #E7ECE9;
+  --color-text: #10231A;
+  --color-text-muted: #64766D;
+  --color-text-faint: #94A39B;
+
+  --color-primary: #1C8A4B;
+  --color-primary-dark: #146538;
+  --color-primary-light: #E6F5EC;
+  --color-primary-soft: #EAF7EF;
+
+  --color-good: #1C8A4B;
+  --color-moderate: #D8A314;
+  --color-poor: #E07A2E;
+  --color-vpoor: #C24C4C;
+  --color-hazardous: #7A2E4C;
+
+  --color-danger: #D7473C;
+  --color-info: #2E6BC2;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 1px 2px rgba(16, 35, 26, 0.04), 0 8px 24px rgba(16, 35, 26, 0.04);
+  --shadow-pop: 0 12px 32px rgba(16, 35, 26, 0.12);
+
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --color-bg: #0E1712;
+  --color-surface: #15201A;
+  --color-border: #223026;
+  --color-text: #EAF3EE;
+  --color-text-muted: #9AAFA4;
+  --color-text-faint: #6D7F75;
+
+  --color-primary: #2FB86B;
+  --color-primary-dark: #1C8A4B;
+  --color-primary-light: #16261D;
+  --color-primary-soft: #17281F;
+
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.28);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+::selection { background: var(--color-primary-light); }
+
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 8px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

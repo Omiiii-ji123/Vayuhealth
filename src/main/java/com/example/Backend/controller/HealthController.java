@@ -1,9 +1,11 @@
 package com.example.Backend.controller;
 
+import com.example.Backend.model.AqiData;
 import com.example.Backend.model.HealthStat;
 import com.example.Backend.model.User;
 import com.example.Backend.repository.UserRepository;
 import com.example.Backend.services.AdvisoryEngine;
+import com.example.Backend.services.AqiService;
 import com.example.Backend.services.HealthStatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,28 +24,10 @@ public class HealthController {
     private AdvisoryEngine advisoryEngine;
 
     @Autowired
+    private AqiService aqiService;
+
+    @Autowired
     private UserRepository userRepository;
-
-    // Temporary: Simulated AQI fetch (to be replaced by Dev B’s service)
-    private Map<String, Object> getSimulatedAqiAndLocation(String district) {
-        Map<String, Object> data = new LinkedHashMap<>();
-        Map<String, Object> location = new LinkedHashMap<>();
-        location.put("state", "Maharashtra");
-        location.put("district", district);
-        location.put("city", "Kalyan");
-        location.put("lat", 19.2437);
-        location.put("lng", 73.1355);
-
-        Map<String, Object> aqiData = new LinkedHashMap<>();
-        aqiData.put("aqi_score", 168);
-        aqiData.put("status", "Unhealthy");
-        aqiData.put("dominant_pollutant", "PM2.5");
-        aqiData.put("color_code", "#FF9900");
-
-        data.put("location", location);
-        data.put("aqi_data", aqiData);
-        return data;
-    }
 
     @GetMapping("/health-stats/{district}")
     public List<HealthStat> getDistrictStats(@PathVariable String district) {
@@ -62,9 +46,21 @@ public class HealthController {
         }
         User user = userOpt.get();
 
-        // 2. Get AQI & Location (simulated)
-        Map<String, Object> aqiLocation = getSimulatedAqiAndLocation(district);
-        Map<String, Object> aqiData = (Map<String, Object>) aqiLocation.get("aqi_data");
+        // 2. Get AQI & Location from live data or fallback
+        AqiData aqiDataObj = aqiService.getAqiByCity(district);
+
+        Map<String, Object> location = new LinkedHashMap<>();
+        location.put("state", aqiDataObj.getState());
+        location.put("district", aqiDataObj.getDistrict());
+        location.put("city", aqiDataObj.getCity());
+        location.put("lat", aqiDataObj.getLatitude());
+        location.put("lng", aqiDataObj.getLongitude());
+
+        Map<String, Object> aqiData = new LinkedHashMap<>();
+        aqiData.put("aqi_score", aqiDataObj.getAqi());
+        aqiData.put("status", aqiDataObj.getStatus());
+        aqiData.put("dominant_pollutant", determineDominantPollutant(aqiDataObj));
+        aqiData.put("color_code", getAqiColorCode(aqiDataObj.getAqi()));
 
         // 3. Regional health stats
         List<HealthStat> stats = healthStatService.getStatsByDistrict(district);
@@ -86,13 +82,13 @@ public class HealthController {
         // 4. Personalized alert
         Map<String, Object> alert = advisoryEngine.generateAlert(
                 user.getMedicalConditions(),
-                (int) aqiData.get("aqi_score"),
-                (String) aqiData.get("status")
+                aqiDataObj.getAqi(),
+                aqiDataObj.getStatus()
         );
 
         // 5. Build final response
         Map<String, Object> response = new LinkedHashMap<>();
-        response.put("location", aqiLocation.get("location"));
+        response.put("location", location);
         response.put("aqi_data", aqiData);
         response.put("regional_health_stats", Map.of(
                 "total_affected_percentage", Math.round(totalAffected * 10) / 10.0,
@@ -101,5 +97,47 @@ public class HealthController {
         response.put("personalized_alert", alert != null ? alert : Map.of("has_warning", false));
 
         return response;
+    }
+
+    private String determineDominantPollutant(AqiData aqiData) {
+        if (aqiData.getPm25() >= aqiData.getPm10() && aqiData.getPm25() >= aqiData.getNo2()
+                && aqiData.getPm25() >= aqiData.getSo2() && aqiData.getPm25() >= aqiData.getO3()
+                && aqiData.getPm25() >= aqiData.getCo()) {
+            return "PM2.5";
+        }
+        if (aqiData.getPm10() >= aqiData.getNo2() && aqiData.getPm10() >= aqiData.getSo2()
+                && aqiData.getPm10() >= aqiData.getO3() && aqiData.getPm10() >= aqiData.getCo()) {
+            return "PM10";
+        }
+        if (aqiData.getNo2() >= aqiData.getSo2() && aqiData.getNo2() >= aqiData.getO3()
+                && aqiData.getNo2() >= aqiData.getCo()) {
+            return "NO2";
+        }
+        if (aqiData.getSo2() >= aqiData.getO3() && aqiData.getSo2() >= aqiData.getCo()) {
+            return "SO2";
+        }
+        if (aqiData.getO3() >= aqiData.getCo()) {
+            return "O3";
+        }
+        return "CO";
+    }
+
+    private String getAqiColorCode(int aqiScore) {
+        if (aqiScore <= 50) {
+            return "#009966";
+        }
+        if (aqiScore <= 100) {
+            return "#FFDE33";
+        }
+        if (aqiScore <= 150) {
+            return "#FF9933";
+        }
+        if (aqiScore <= 200) {
+            return "#CC0033";
+        }
+        if (aqiScore <= 300) {
+            return "#660099";
+        }
+        return "#7E0023";
     }
 }
