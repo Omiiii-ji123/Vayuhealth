@@ -23,11 +23,15 @@ import {
   Maximize2,
   Minimize2,
   RefreshCw,
-  Target
+  Target,
+  Globe
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { Card, Loader, ErrorState, StatusBadge, EmptyState } from '../components/Common';
 import AqiGauge from '../components/AqiGauge';
+import AQIMapTrigger from '../components/AQIMapTrigger';
+import AQIMapModal from '../components/AQIMapModal';
+import SafestRoute from '../components/SafestRoute';
 import { useAsync } from '../hooks/useAsync';
 import { getAllAqi, getAqiByCity, getAqiByCoords } from '../api/aqi';
 import { normalizeAqiList, normalizeAqiRecord, getAqiBand, formatRelativeTime } from '../utils/aqi';
@@ -160,6 +164,8 @@ export default function AirQualityMap() {
   const [locateError, setLocateError] = useState(null);
   const [mapView, setMapView] = useState('default');
   const [selectedStation, setSelectedStation] = useState(null);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [isMapReady, setIsMapReady] = useState(false);
   const mapRef = useRef(null);
 
   // Fetch AQI data
@@ -263,10 +269,15 @@ export default function AirQualityMap() {
   // Default center (Pune, Maharashtra)
   const defaultCenter = [18.5204, 73.8567];
 
+  // Handle map ready state
+  useEffect(() => {
+    setIsMapReady(true);
+  }, []);
+
   return (
     <Layout title="Air Quality Map" subtitle="Browse live AQI readings across every tracked location.">
       <div className="air-quality-dashboard">
-        {/* Top Bar with Search */}
+        {/* Top Bar with Search and Map Trigger */}
         <div className="top-bar">
           <div className="top-bar__search">
             <Search size={18} />
@@ -283,10 +294,17 @@ export default function AirQualityMap() {
               </button>
             )}
           </div>
-          <button className="btn btn--primary btn--sm" onClick={locateMe} disabled={locating}>
-            <Navigation size={14} className={locating ? 'spin' : ''} /> 
-            {locating ? 'Locating...' : 'Use my location'}
-          </button>
+          <div className="top-bar__actions">
+            <AQIMapTrigger 
+              onClick={() => setIsMapModalOpen(true)}
+              label="🗺️ All-India Map"
+              className="map-trigger-btn"
+            />
+            <button className="btn btn--primary btn--sm" onClick={locateMe} disabled={locating}>
+              <Navigation size={14} className={locating ? 'spin' : ''} /> 
+              {locating ? 'Locating...' : 'Use my location'}
+            </button>
+          </div>
         </div>
 
         {locateError && <div className="error-message">{locateError}</div>}
@@ -312,59 +330,92 @@ export default function AirQualityMap() {
           </div>
         </div>
 
+        {/* ===================================================
+            SAFEST ROUTE - NEW SECTION
+        =================================================== */}
+        
+        <SafestRoute />
+
         {/* Map Section */}
         <div className="map-section">
+          <div className="map-header">
+            <h3 className="map-header__title">
+              <MapPin size={16} />
+              Pune, Maharashtra
+            </h3>
+            <div className="map-header__controls">
+              <button 
+                className="map-header__btn"
+                onClick={() => setIsMapModalOpen(true)}
+              >
+                <Globe size={14} />
+                View Full India Map
+              </button>
+              <span className="map-header__update">
+                <Clock size={12} />
+                Updated 2 mins ago
+              </span>
+            </div>
+          </div>
+          
           <div className="map-container">
-            <MapContainer
-              center={defaultCenter}
-              zoom={12}
-              className="leaflet-map"
-              zoomControl={false}
-              ref={mapRef}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <ZoomControl position="bottomright" />
-              
-              {/* User location marker */}
-              {locating && (
-                <Circle
-                  center={defaultCenter}
-                  radius={500}
-                  pathOptions={{ 
-                    color: '#4299e1',
-                    fillColor: '#4299e1',
-                    fillOpacity: 0.2
-                  }}
+            {isMapReady ? (
+              <MapContainer
+                center={defaultCenter}
+                zoom={12}
+                className="leaflet-map"
+                zoomControl={false}
+                ref={mapRef}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-              )}
+                <ZoomControl position="bottomright" />
+                
+                {/* User location marker */}
+                {locating && (
+                  <Circle
+                    center={defaultCenter}
+                    radius={500}
+                    pathOptions={{ 
+                      color: '#4299e1',
+                      fillColor: '#4299e1',
+                      fillOpacity: 0.2
+                    }}
+                  />
+                )}
 
-              {/* Station markers */}
-              {markers.map((station, idx) => (
-                <Marker
-                  key={idx}
-                  position={[station.lat, station.lng]}
-                  icon={station.icon}
-                  eventHandlers={{
-                    click: () => handleStationClick(station)
-                  }}
-                >
-                  <Popup>
-                    <div className="map-popup">
-                      <strong>{station.name}</strong>
-                      <div>AQI: {station.aqi}</div>
-                      <div className="map-popup__status">
-                        Status: {getAqiBand(station.aqi).label}
+                {/* Station markers */}
+                {markers.map((station, idx) => (
+                  <Marker
+                    key={idx}
+                    position={[station.lat, station.lng]}
+                    icon={station.icon}
+                    eventHandlers={{
+                      click: () => handleStationClick(station)
+                    }}
+                  >
+                    <Popup>
+                      <div className="map-popup">
+                        <strong>{station.name}</strong>
+                        <div>AQI: {station.aqi}</div>
+                        <div className="map-popup__status">
+                          Status: {getAqiBand(station.aqi).label}
+                        </div>
                       </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+                    </Popup>
+                  </Marker>
+                ))}
 
-              <MapController markers={markers} />
-            </MapContainer>
+                <MapController markers={markers} />
+              </MapContainer>
+            ) : (
+              <div className="map-loading">
+                <div className="map-loading__spinner" />
+                <p>Loading map...</p>
+              </div>
+            )}
 
             {/* Map overlay controls */}
             <div className="map-controls">
@@ -504,6 +555,12 @@ export default function AirQualityMap() {
         </div>
       </div>
 
+      {/* AQI Map Modal */}
+      <AQIMapModal 
+        isOpen={isMapModalOpen} 
+        onClose={() => setIsMapModalOpen(false)} 
+      />
+
       <style jsx>{`
         .air-quality-dashboard {
           width: 100%;
@@ -512,9 +569,10 @@ export default function AirQualityMap() {
         /* Top Bar */
         .top-bar {
           display: flex;
-          gap: 16px;
+          gap: 12px;
           align-items: center;
           margin-bottom: 20px;
+          flex-wrap: wrap;
         }
 
         .top-bar__search {
@@ -528,6 +586,7 @@ export default function AirQualityMap() {
           border: 1px solid #e2e8f0;
           box-shadow: 0 1px 3px rgba(0,0,0,0.06);
           position: relative;
+          min-width: 200px;
         }
 
         .top-bar__search svg {
@@ -561,6 +620,35 @@ export default function AirQualityMap() {
           color: #718096;
         }
 
+        .top-bar__actions {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .map-trigger-btn {
+          background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(0, 230, 118, 0.08));
+          border: 1px solid rgba(0, 242, 254, 0.3);
+          color: #00f2fe;
+          padding: 6px 14px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s;
+          white-space: nowrap;
+        }
+
+        .map-trigger-btn:hover {
+          background: linear-gradient(135deg, rgba(0, 242, 254, 0.3), rgba(0, 230, 118, 0.15));
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 242, 254, 0.2);
+        }
+
         .error-message {
           color: #e53e3e;
           font-size: 14px;
@@ -586,17 +674,20 @@ export default function AirQualityMap() {
         }
 
         .btn--primary {
-          background: #4299e1;
+          background: linear-gradient(135deg, #2b6cb0, #4299e1);
           color: white;
         }
 
         .btn--primary:hover {
-          background: #3182ce;
+          background: linear-gradient(135deg, #2c5282, #3182ce);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(43, 108, 176, 0.25);
         }
 
         .btn--primary:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+          transform: none;
         }
 
         .btn--sm {
@@ -639,6 +730,7 @@ export default function AirQualityMap() {
           align-items: center;
           gap: 24px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+          flex-wrap: wrap;
         }
 
         .aqi-layers__header {
@@ -683,18 +775,100 @@ export default function AirQualityMap() {
           margin-bottom: 24px;
         }
 
+        .map-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 16px;
+          background: white;
+          border-radius: 12px 12px 0 0;
+          border: 1px solid #e2e8f0;
+          border-bottom: none;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .map-header__title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 16px;
+          font-weight: 600;
+          color: #1a202c;
+          margin: 0;
+        }
+
+        .map-header__title svg {
+          color: #4299e1;
+        }
+
+        .map-header__controls {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .map-header__btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 12px;
+          background: #ebf8ff;
+          border: 1px solid #bee3f8;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          color: #2b6cb0;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .map-header__btn:hover {
+          background: #bee3f8;
+          transform: translateY(-1px);
+        }
+
+        .map-header__update {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 12px;
+          color: #718096;
+        }
+
         .map-container {
           position: relative;
-          border-radius: 12px;
+          border-radius: 0 0 12px 12px;
           overflow: hidden;
           border: 1px solid #e2e8f0;
-          height: 420px;
+          border-top: none;
+          height: 380px;
           background: #f7fafc;
         }
 
         .leaflet-map {
           height: 100%;
           width: 100%;
+        }
+
+        .map-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          gap: 12px;
+          color: #718096;
+        }
+
+        .map-loading__spinner {
+          width: 32px;
+          height: 32px;
+          border: 3px solid #e2e8f0;
+          border-top-color: #4299e1;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
         }
 
         .map-controls {
@@ -1219,6 +1393,16 @@ export default function AirQualityMap() {
             align-items: stretch;
           }
 
+          .top-bar__actions {
+            justify-content: stretch;
+          }
+
+          .top-bar__actions .btn,
+          .top-bar__actions .map-trigger-btn {
+            flex: 1;
+            justify-content: center;
+          }
+
           .aqi-layers {
             flex-wrap: wrap;
             gap: 12px;
@@ -1226,6 +1410,15 @@ export default function AirQualityMap() {
 
           .aqi-layers__grid {
             flex-wrap: wrap;
+          }
+
+          .map-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .map-container {
+            height: 280px;
           }
 
           .location-card__body {
@@ -1241,10 +1434,6 @@ export default function AirQualityMap() {
             flex-direction: column;
             gap: 8px;
             align-items: flex-start;
-          }
-
-          .map-container {
-            height: 300px;
           }
 
           .dashboard-grid {
@@ -1276,7 +1465,18 @@ export default function AirQualityMap() {
           }
 
           .map-container {
-            height: 250px;
+            height: 220px;
+          }
+
+          .map-header__controls {
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+          }
+
+          .map-header__btn {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>

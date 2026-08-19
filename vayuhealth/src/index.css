@@ -37,6 +37,31 @@
   color-scheme: light;
 }
 
+.btn-video-watch {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.18), rgba(179, 136, 255, 0.25));
+  border: 1px solid #00f2fe;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.btn-video-watch:hover {
+  background: linear-gradient(135deg, #00f2fe, #b388ff);
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 242, 254, 0.35);
+}
+
 [data-theme="dark"] {
   --color-bg: #0E1712;
   --color-surface: #15201A;

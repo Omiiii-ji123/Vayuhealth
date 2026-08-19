@@ -1,28 +1,35 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, BellRing, Moon, Sun, Menu, ChevronDown, LogOut, User as UserIcon, X, Info, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
+import { 
+  Search, 
+  Bell, 
+  BellRing, 
+  Moon, 
+  Sun, 
+  Menu, 
+  ChevronDown, 
+  LogOut, 
+  User as UserIcon, 
+  Info, 
+  CheckCircle, 
+  AlertTriangle, 
+  AlertCircle,
+  X
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useNotifications } from '../context/NotificationContext';
 
-// Notification types
-const NOTIFICATION_TYPES = {
-  INFO: 'info',
-  SUCCESS: 'success',
-  WARNING: 'warning',
-  DANGER: 'danger',
-};
-
-// Notification icons mapping
-const NOTIFICATION_ICONS = {
-  [NOTIFICATION_TYPES.INFO]: Info,
-  [NOTIFICATION_TYPES.SUCCESS]: CheckCircle,
-  [NOTIFICATION_TYPES.WARNING]: AlertTriangle,
-  [NOTIFICATION_TYPES.DANGER]: AlertCircle,
-};
-
-export default function Topbar({ onMenuClick, title, subtitle, onSearch, notifications = [], onDismissNotification, onDismissAllNotifications }) {
+export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    dismissAll,
+    markAllAsRead 
+  } = useNotifications();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -66,19 +73,66 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
     .join('')
     .toUpperCase();
 
-  const unreadCount = notifications?.filter(n => !n.read).length || 0;
-
   const handleDismissNotification = (index) => {
-    if (onDismissNotification) {
-      onDismissNotification(index);
-    }
+    markAsRead(index);
   };
 
   const handleDismissAll = () => {
-    if (onDismissAllNotifications) {
-      onDismissAllNotifications();
-    }
+    dismissAll();
     setNotifOpen(false);
+  };
+
+  const handleMarkAllRead = () => {
+    markAllAsRead();
+  };
+
+  // Get notification icon based on category
+  const getNotificationIcon = (category) => {
+    switch(category) {
+      case 'danger': return AlertCircle;
+      case 'warning': return AlertTriangle;
+      case 'success': return CheckCircle;
+      default: return Info;
+    }
+  };
+
+  // Get category label
+  const getCategoryLabel = (category) => {
+    switch(category) {
+      case 'danger': return 'Critical';
+      case 'warning': return 'Warning';
+      case 'success': return 'Success';
+      default: return 'Info';
+    }
+  };
+
+  // Format time
+  const formatNotificationTime = (timestamp) => {
+    if (!timestamp) return 'Just now';
+    
+    const now = new Date();
+    const then = new Date(timestamp);
+    const diffMs = now - then;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
+    return then.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // Get notification type emoji
+  const getNotificationEmoji = (type) => {
+    switch(type) {
+      case 'aqi_alert': return '🌍';
+      case 'weekly_digest': return '📊';
+      case 'ai_insight': return '🧠';
+      default: return '📢';
+    }
   };
 
   return (
@@ -118,7 +172,7 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
             {unreadCount > 0 ? (
               <>
                 <BellRing size={18} />
-                <span className="notif-dot">{unreadCount}</span>
+                <span className="notif-dot">{unreadCount > 99 ? '99+' : unreadCount}</span>
               </>
             ) : (
               <Bell size={18} />
@@ -129,15 +183,30 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           {notifOpen && (
             <div className="notification-panel">
               <div className="notification-panel__header">
-                <span className="notification-panel__title">Notifications</span>
-                {notifications && notifications.length > 0 && (
-                  <button 
-                    className="notification-panel__dismiss-all"
-                    onClick={handleDismissAll}
-                  >
-                    Dismiss all
-                  </button>
-                )}
+                <div className="notification-panel__header-left">
+                  <span className="notification-panel__title">Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="notification-panel__badge">{unreadCount} unread</span>
+                  )}
+                </div>
+                <div className="notification-panel__header-actions">
+                  {notifications && notifications.length > 0 && unreadCount > 0 && (
+                    <button 
+                      className="notification-panel__mark-read"
+                      onClick={handleMarkAllRead}
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                  {notifications && notifications.length > 0 && (
+                    <button 
+                      className="notification-panel__dismiss-all"
+                      onClick={handleDismissAll}
+                    >
+                      Dismiss all
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="notification-panel__list">
@@ -148,20 +217,31 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
                     <span>All caught up!</span>
                   </div>
                 ) : (
-                  notifications.map((notification, index) => {
-                    const Icon = NOTIFICATION_ICONS[notification.type] || Info;
+                  notifications.slice(0, 20).map((notification, index) => {
+                    const Icon = getNotificationIcon(notification.category);
+                    const categoryLabel = getCategoryLabel(notification.category);
+                    const emoji = getNotificationEmoji(notification.type);
+                    
                     return (
                       <div 
-                        key={index} 
-                        className={`notification-item notification-item--${notification.type} ${!notification.read ? 'notification-item--unread' : ''}`}
+                        key={notification.id || index} 
+                        className={`notification-item notification-item--${notification.category} ${!notification.read ? 'notification-item--unread' : ''}`}
                         onClick={() => handleDismissNotification(index)}
                       >
                         <div className="notification-item__icon">
-                          <Icon size={16} />
+                          <span className="notification-item__emoji">{emoji}</span>
                         </div>
                         <div className="notification-item__content">
+                          <div className="notification-item__header">
+                            <span className="notification-item__title">{notification.title}</span>
+                            <span className={`notification-item__category notification-item__category--${notification.category}`}>
+                              {categoryLabel}
+                            </span>
+                          </div>
                           <span className="notification-item__message">{notification.message}</span>
-                          <span className="notification-item__time">{notification.time || 'Just now'}</span>
+                          <span className="notification-item__time">
+                            {formatNotificationTime(notification.timestamp)}
+                          </span>
                         </div>
                         {!notification.read && <div className="notification-item__dot" />}
                       </div>
@@ -194,7 +274,7 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
       </div>
 
       <style jsx>{`
-        /* Topbar existing styles */
+        /* Topbar styles */
         .topbar {
           display: flex;
           align-items: center;
@@ -343,8 +423,8 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           position: absolute;
           right: 0;
           top: calc(100% + 8px);
-          width: 380px;
-          max-height: 460px;
+          width: 420px;
+          max-height: 500px;
           background: var(--color-bg-primary, white);
           border-radius: 12px;
           border: 1px solid var(--color-border, #e2e8f0);
@@ -363,6 +443,20 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           border-bottom: 1px solid var(--color-border, #e2e8f0);
           background: var(--color-bg-secondary, #f7fafc);
           flex-shrink: 0;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .notification-panel__header-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .notification-panel__header-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .notification-panel__title {
@@ -371,7 +465,17 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           color: var(--color-text-primary, #1a202c);
         }
 
-        .notification-panel__dismiss-all {
+        .notification-panel__badge {
+          font-size: 11px;
+          background: #e53e3e;
+          color: white;
+          padding: 1px 8px;
+          border-radius: 12px;
+          font-weight: 600;
+        }
+
+        .notification-panel__dismiss-all,
+        .notification-panel__mark-read {
           background: none;
           border: none;
           font-size: 12px;
@@ -382,7 +486,8 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           transition: all 0.2s;
         }
 
-        .notification-panel__dismiss-all:hover {
+        .notification-panel__dismiss-all:hover,
+        .notification-panel__mark-read:hover {
           background: var(--color-bg-hover, #f7fafc);
           color: var(--color-text-primary, #1a202c);
         }
@@ -390,6 +495,19 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
         .notification-panel__list {
           overflow-y: auto;
           flex: 1;
+        }
+
+        .notification-panel__list::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        .notification-panel__list::-webkit-scrollbar-track {
+          background: var(--color-bg-secondary);
+        }
+
+        .notification-panel__list::-webkit-scrollbar-thumb {
+          background: var(--color-border);
+          border-radius: 2px;
         }
 
         .notification-empty {
@@ -441,8 +559,8 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
         }
 
         .notification-item__icon {
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -450,24 +568,24 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           flex-shrink: 0;
         }
 
-        .notification-item--info .notification-item__icon {
-          background: #ebf8ff;
-          color: #2b6cb0;
-        }
-
-        .notification-item--success .notification-item__icon {
-          background: #f0fff4;
-          color: #276749;
-        }
-
-        .notification-item--warning .notification-item__icon {
-          background: #fffbeb;
-          color: #975a16;
+        .notification-item__emoji {
+          font-size: 18px;
         }
 
         .notification-item--danger .notification-item__icon {
           background: #fff5f5;
-          color: #9b2c2c;
+        }
+
+        .notification-item--warning .notification-item__icon {
+          background: #fffbeb;
+        }
+
+        .notification-item--success .notification-item__icon {
+          background: #f0fff4;
+        }
+
+        .notification-item--info .notification-item__icon {
+          background: #ebf8ff;
         }
 
         .notification-item__content {
@@ -475,18 +593,64 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           min-width: 0;
         }
 
+        .notification-item__header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 2px;
+        }
+
+        .notification-item__title {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--color-text-primary, #2d3748);
+        }
+
+        .notification-item__category {
+          font-size: 10px;
+          font-weight: 600;
+          padding: 1px 8px;
+          border-radius: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          flex-shrink: 0;
+        }
+
+        .notification-item__category--danger {
+          background: #fff5f5;
+          color: #9b2c2c;
+        }
+
+        .notification-item__category--warning {
+          background: #fffbeb;
+          color: #975a16;
+        }
+
+        .notification-item__category--success {
+          background: #f0fff4;
+          color: #276749;
+        }
+
+        .notification-item__category--info {
+          background: #ebf8ff;
+          color: #2b6cb0;
+        }
+
         .notification-item__message {
           display: block;
           font-size: 13px;
-          color: var(--color-text-primary, #2d3748);
+          color: var(--color-text-secondary, #4a5568);
           line-height: 1.4;
-          margin-bottom: 4px;
+          white-space: pre-wrap;
+          word-wrap: break-word;
         }
 
         .notification-item__time {
           display: block;
           font-size: 11px;
           color: var(--color-text-secondary, #718096);
+          margin-top: 4px;
         }
 
         .notification-item__dot {
@@ -495,7 +659,13 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           border-radius: 50%;
           background: #4299e1;
           flex-shrink: 0;
-          margin-top: 8px;
+          margin-top: 12px;
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
 
         /* User Menu */
@@ -598,8 +768,9 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           }
 
           .notification-panel {
-            width: 320px;
+            width: 340px;
             right: -20px;
+            max-height: 420px;
           }
         }
 
@@ -617,13 +788,29 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch, notific
           }
 
           .notification-panel {
-            width: 290px;
+            width: 300px;
             right: -40px;
-            max-height: 400px;
+            max-height: 380px;
           }
 
           .notification-item {
             padding: 10px 12px;
+          }
+
+          .notification-item__header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+          }
+
+          .notification-panel__header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .notification-panel__header-actions {
+            width: 100%;
+            justify-content: flex-start;
           }
         }
       `}</style>

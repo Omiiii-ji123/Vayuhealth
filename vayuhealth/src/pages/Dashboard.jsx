@@ -9,7 +9,8 @@ import {
   AlertCircle,
   Navigation,
 } from 'lucide-react';
-
+import AQIMapTrigger from '../components/AQIMapTrigger';
+import AQIMapModal from '../components/AQIMapModal';
 import {
   LineChart,
   Line,
@@ -1451,6 +1452,7 @@ export default function Dashboard() {
           </button>
 
         </Card>
+        
 
       </div>
 
