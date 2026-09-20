@@ -1,18 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, Fragment } from 'react';
 import { 
   MapPin, 
   Navigation, 
   Maximize2, 
   Minimize2, 
-  RefreshCw,
-  ZoomIn,
-  ZoomOut,
-  Layers,
-  Target
+  RefreshCw, 
+  ZoomIn, 
+  ZoomOut, 
+  Layers, 
+  Target 
 } from 'lucide-react';
 
 // Import Leaflet
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMap, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, Tooltip, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -23,6 +23,28 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
+// Map Resizer component to ensure Leaflet recalculates size when route is calculated
+function MapResizer({ waypoints }) {
+  const map = useMap();
+  useEffect(() => {
+    const t1 = setTimeout(() => {
+      map.invalidateSize();
+      if (waypoints && waypoints.length > 1) {
+        const bounds = L.latLngBounds(waypoints.map(w => [w.lat, w.lng]));
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+      }
+    }, 100);
+    const t2 = setTimeout(() => {
+      map.invalidateSize();
+    }, 400);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [map, waypoints]);
+  return null;
+}
 
 // Custom marker icons based on risk level
 const getWaypointIcon = (riskLevel, isStart, isEnd) => {
@@ -51,104 +73,68 @@ const getWaypointIcon = (riskLevel, isStart, isEnd) => {
         break;
       default:
         color = '#48bb78';
-        symbol = '📍';
+        symbol = '🟢';
     }
   }
 
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-      <circle cx="18" cy="18" r="16" fill="${color}" opacity="0.9" stroke="white" stroke-width="2"/>
-      <text x="18" y="22" text-anchor="middle" fill="white" font-size="14" font-weight="bold">${symbol}</text>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+      <circle cx="16" cy="16" r="14" fill="${color}" stroke="#ffffff" stroke-width="2.5" opacity="0.95"/>
+      <text x="16" y="21" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">${symbol}</text>
     </svg>
   `;
-  
+
   return L.divIcon({
     html: svg,
-    className: 'route-marker',
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
-    popupAnchor: [0, -18]
+    className: 'custom-waypoint-marker',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16]
   });
 };
 
-// Map controller to fit bounds
-function MapController({ waypoints, mapRef }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (waypoints && waypoints.length > 0) {
-      const latLngs = waypoints.map(w => [w.lat, w.lng]);
-      const bounds = L.latLngBounds(latLngs);
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 13 });
-    }
-  }, [waypoints, map]);
-  
-  return null;
-}
-
-// Route Polyline with gradient
+// Route Polyline Component
 function RoutePolyline({ waypoints }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (!waypoints || waypoints.length < 2) return;
+  if (!waypoints || waypoints.length < 2) return null;
+  const positions = waypoints.map(w => [w.lat, w.lng]);
 
-    // Create polyline with gradient effect
-    const latLngs = waypoints.map(w => [w.lat, w.lng]);
-    
-    // Create a dashed overlay for visual effect
-    const polyline = L.polyline(latLngs, {
-      color: '#00f2fe',
-      weight: 5,
-      opacity: 0.9,
-      smoothFactor: 1,
-      lineJoin: 'round',
-    }).addTo(map);
-
-    // Add glow effect (dashed line behind)
-    const glowLine = L.polyline(latLngs, {
-      color: 'rgba(0, 242, 254, 0.3)',
-      weight: 12,
-      opacity: 0.3,
-      smoothFactor: 1,
-      lineJoin: 'round',
-    }).addTo(map);
-
-    return () => {
-      map.removeLayer(polyline);
-      map.removeLayer(glowLine);
-    };
-  }, [waypoints, map]);
-
-  return null;
+  return (
+    <>
+      <Polyline
+        positions={positions}
+        pathOptions={{
+          color: '#10b981',
+          weight: 4,
+          opacity: 0.9,
+          dashArray: '8, 8',
+        }}
+      />
+      <Polyline
+        positions={positions}
+        pathOptions={{
+          color: '#059669',
+          weight: 2,
+          opacity: 1,
+        }}
+      />
+    </>
+  );
 }
 
-export default function RouteMap({ 
-  waypoints, 
-  onWaypointClick, 
-  height = 380,
-  className = '',
-  showControls = true,
-  interactive = true
-}) {
+export default function RouteMap({ waypoints = [], className = '', height = '500px', onWaypointClick, showControls = true }) {
   const mapRef = useRef(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
 
-  // Default center (India)
-  const defaultCenter = [20.5937, 78.9629];
+  // Default center (India or first waypoint)
+  const defaultCenter = (waypoints && waypoints.length > 0 && waypoints[0]?.lat)
+    ? [waypoints[0].lat, waypoints[0].lng]
+    : [20.5937, 78.9629];
 
   // Handle map ready state
   useEffect(() => {
     setIsMapReady(true);
   }, []);
-
-  // Get marker for waypoint
-  const getMarker = (waypoint, index, total) => {
-    const isStart = index === 0;
-    const isEnd = index === total - 1;
-    return getWaypointIcon(waypoint.riskLevel, isStart, isEnd);
-  };
 
   // Get risk color for circle
   const getRiskColor = (riskLevel) => {
@@ -198,16 +184,6 @@ export default function RouteMap({
             gap: 8px;
             color: #a0aec0;
           }
-
-          .route-map__empty p {
-            margin: 0;
-            font-weight: 500;
-            font-size: 14px;
-          }
-
-          .route-map__empty span {
-            font-size: 13px;
-          }
         `}</style>
       </div>
     );
@@ -216,11 +192,16 @@ export default function RouteMap({
   return (
     <div className={`route-map ${className}`} style={{ height }}>
       <div className="route-map__container">
+        {/* Satellite Indicator Badge on Map */}
+        <div className="route-map-satellite-badge">
+          🛰️ Satellite Route Surveillance
+        </div>
+
         {isMapReady ? (
           <MapContainer
-            key="route-map"
+            key="route-satellite-map"
             center={defaultCenter}
-            zoom={6}
+            zoom={8}
             className="route-leaflet-map"
             zoomControl={false}
             ref={mapRef}
@@ -231,26 +212,35 @@ export default function RouteMap({
             }}
           >
             <ZoomControl position="bottomright" />
+            <MapResizer waypoints={waypoints} />
             
+            {/* Satellite Imagery Base Layer */}
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              maxZoom={18}
+              attribution='&copy; Esri, Maxar, Earthstar Geographics'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              maxZoom={19}
+            />
+
+            {/* Geographic Place Names & State Boundaries Layer */}
+            <TileLayer
+              attribution='&copy; Esri'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+              maxZoom={19}
             />
 
             {/* Route Polyline */}
             <RoutePolyline waypoints={waypoints} />
 
-            {/* Waypoint Markers */}
+            {/* Waypoint Markers with Permanent Region Labels */}
             {waypoints.map((waypoint, index) => {
               const isStart = index === 0;
               const isEnd = index === waypoints.length - 1;
-              const markerIcon = getMarker(waypoint, index, waypoints.length);
+              const markerIcon = getWaypointIcon(waypoint.riskLevel, isStart, isEnd);
               const riskColor = getRiskColor(waypoint.riskLevel);
               const riskRadius = getRiskRadius(waypoint.riskLevel);
 
               return (
-                <div key={index}>
+                <Fragment key={`wp-${index}-${waypoint.lat}-${waypoint.lng}`}>
                   {/* Risk Circle */}
                   <Circle
                     center={[waypoint.lat, waypoint.lng]}
@@ -258,9 +248,9 @@ export default function RouteMap({
                     pathOptions={{
                       color: riskColor,
                       fillColor: riskColor,
-                      fillOpacity: 0.1,
-                      weight: 1,
-                      opacity: 0.5,
+                      fillOpacity: 0.12,
+                      weight: 1.5,
+                      opacity: 0.6,
                     }}
                   />
 
@@ -272,6 +262,17 @@ export default function RouteMap({
                       click: () => onWaypointClick?.(index)
                     }}
                   >
+                    <Tooltip permanent direction="top" offset={[0, -18]} className="waypoint-name-tooltip">
+                      <div className="waypoint-tooltip-badge">
+                        <span className="waypoint-tooltip-title">
+                          {isStart ? '🚩 Start: ' : isEnd ? '🏁 Dest: ' : ''}{waypoint.title}
+                        </span>
+                        <span className="waypoint-tooltip-aqi" style={{ backgroundColor: riskColor }}>
+                          AQI {waypoint.aqi}
+                        </span>
+                      </div>
+                    </Tooltip>
+
                     <Popup>
                       <div className="route-map-popup">
                         <div className="route-map-popup__header">
@@ -295,11 +296,9 @@ export default function RouteMap({
                       </div>
                     </Popup>
                   </Marker>
-                </div>
+                </Fragment>
               );
             })}
-
-            <MapController waypoints={waypoints} mapRef={mapRef} />
           </MapContainer>
         ) : (
           <div className="route-map__loading">
@@ -466,18 +465,79 @@ export default function RouteMap({
           transform: scale(1.05);
         }
 
+        .route-map-satellite-badge {
+          position: absolute;
+          top: 14px;
+          right: 14px;
+          display: inline-flex;
+          align-items: center;
+          background: rgba(15, 23, 42, 0.92);
+          backdrop-filter: blur(4px);
+          padding: 5px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: #38bdf8;
+          font-size: 11px;
+          font-weight: 700;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+          z-index: 1000;
+        }
+
+        /* Permanent Waypoint Name Tooltip on Satellite Map */
+        :global(.waypoint-name-tooltip) {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+
+        :global(.waypoint-name-tooltip::before) {
+          display: none !important;
+        }
+
+        :global(.waypoint-tooltip-badge) {
+          display: inline-flex;
+          align-items: center;
+          background: rgba(15, 23, 42, 0.92);
+          backdrop-filter: blur(4px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 6px;
+          padding: 2px 7px;
+          gap: 5px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          pointer-events: none;
+        }
+
+        :global(.waypoint-tooltip-title) {
+          font-size: 11px;
+          font-weight: 700;
+          color: #ffffff;
+          white-space: nowrap;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        :global(.waypoint-tooltip-aqi) {
+          font-size: 10px;
+          font-weight: 800;
+          color: #ffffff;
+          padding: 1px 5px;
+          border-radius: 4px;
+        }
+
         .route-map__legend {
           position: absolute;
           bottom: 20px;
           left: 20px;
-          background: rgba(15, 23, 42, 0.9);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(4px);
+          border: 1px solid #e2e8f0;
           border-radius: 8px;
           padding: 8px 12px;
           display: flex;
           flex-direction: column;
           gap: 4px;
           z-index: 1000;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .route-map__legend-item {
@@ -485,7 +545,7 @@ export default function RouteMap({
           align-items: center;
           gap: 8px;
           font-size: 11px;
-          color: #cbd5e1;
+          color: #334155;
         }
 
         .route-map__legend-dot {

@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -43,23 +44,82 @@ public class SihDataInitializer implements CommandLineRunner {
     }
 
     private void seedUsers() {
+        // 1. CPCB & Municipal Admin Account
+        ensureDemoUser(
+                "CPCB Central Air Command Admin",
+                "admin@vayuhealth.gov.in",
+                "admin123",
+                "ADMIN",
+                42,
+                "Delhi",
+                "New Delhi",
+                false,
+                false,
+                "Low",
+                Collections.emptyList()
+        );
+
+        // 2. High-Risk Delhi NCR Citizens
         ensureDemoUser(
                 "Rahul Sharma",
                 "rahul@sih.gov.in",
+                "password123",
+                "USER",
                 28,
                 "Delhi",
-                "Delhi NCR",
+                "Anand Vihar, Delhi",
                 true,
                 true,
                 "High",
                 List.of("Asthma", "Allergic Rhinitis")
         );
         ensureDemoUser(
+                "Aarav Kapoor",
+                "aarav.k@delhihealth.in",
+                "password123",
+                "USER",
+                14,
+                "Delhi",
+                "Rohini Sector 16, Delhi",
+                true,
+                false,
+                "High",
+                List.of("Pediatric Asthma")
+        );
+        ensureDemoUser(
+                "Sunita Verma",
+                "sunita.v@delhi.gov.in",
+                "password123",
+                "USER",
+                62,
+                "Delhi",
+                "Dwarka Sector 8, Delhi",
+                false,
+                true,
+                "High",
+                List.of("Hypertension", "COPD Exacerbation")
+        );
+        ensureDemoUser(
+                "Vikram Singh",
+                "vikram.s@noida.org",
+                "password123",
+                "USER",
+                42,
+                "Uttar Pradesh",
+                "Noida Sector 62",
+                false,
+                true,
+                "Moderate",
+                List.of("Allergic Rhinitis")
+        );
+        ensureDemoUser(
                 "Priya Patel",
                 "priya@sih.gov.in",
+                "password123",
+                "USER",
                 34,
                 "Maharashtra",
-                "Mumbai",
+                "BKC, Mumbai",
                 false,
                 true,
                 "Moderate",
@@ -67,12 +127,13 @@ public class SihDataInitializer implements CommandLineRunner {
         );
     }
 
-    private void ensureDemoUser(String name, String email, int age, String state, String city,
+    private void ensureDemoUser(String name, String email, String plainPassword, String role, int age, String state, String city,
                                 boolean hasAsthma, boolean hasAllergies, String sensitivity,
                                 List<String> conditions) {
         userRepository.findByEmail(email).ifPresentOrElse(existing -> {
             if (existing.getPasswordHash() == null || existing.getPasswordHash().isBlank()) {
-                existing.setPasswordHash(passwordEncoder.encode("password123"));
+                existing.setPasswordHash(passwordEncoder.encode(plainPassword));
+                existing.setRole(role);
                 existing.setHasAsthma(hasAsthma);
                 existing.setHasAllergies(hasAllergies);
                 existing.setSensitivityLevel(sensitivity);
@@ -84,14 +145,15 @@ public class SihDataInitializer implements CommandLineRunner {
         }, () -> userRepository.save(User.builder()
                 .name(name)
                 .email(email)
-                .passwordHash(passwordEncoder.encode("password123"))
+                .passwordHash(passwordEncoder.encode(plainPassword))
+                .role(role)
                 .age(age)
                 .state(state)
                 .city(city)
                 .hasAsthma(hasAsthma)
                 .hasAllergies(hasAllergies)
                 .hasHeartCondition(false)
-                .isElderly(false)
+                .isElderly(age >= 60)
                 .sensitivityLevel(sensitivity)
                 .medicalConditions(conditions)
                 .build()));

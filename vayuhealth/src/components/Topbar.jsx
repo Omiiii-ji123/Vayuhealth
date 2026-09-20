@@ -13,12 +13,21 @@ import {
   CheckCircle, 
   AlertTriangle, 
   AlertCircle,
-  X
+  Globe,
+  X,
+  Sparkles,
+  Flame,
+  ShieldAlert,
+  Leaf,
+  Radio,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CityAutocomplete from './CityAutocomplete';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useNotifications } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useDemoScenario } from '../context/DemoScenarioContext';
 
 export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
   const { user, logout } = useAuth();
@@ -30,14 +39,26 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
     dismissAll,
     markAllAsRead 
   } = useNotifications();
+  const { language, setLanguage, t, languagesList, currentLanguageMeta } = useLanguage();
+  const { 
+    currentScenario, 
+    scenarioMeta, 
+    selectScenario, 
+    isScenarioActive, 
+    allScenarios 
+  } = useDemoScenario();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [scenarioOpen, setScenarioOpen] = useState(false);
   const [query, setQuery] = useState('');
   const menuRef = useRef(null);
   const notifRef = useRef(null);
+  const langRef = useRef(null);
+  const scenarioRef = useRef(null);
 
-  // Close notification panel when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function onClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -45,6 +66,12 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
       }
       if (notifRef.current && !notifRef.current.contains(e.target)) {
         setNotifOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(e.target)) {
+        setLangOpen(false);
+      }
+      if (scenarioRef.current && !scenarioRef.current.contains(e.target)) {
+        setScenarioOpen(false);
       }
     }
     document.addEventListener('mousedown', onClickOutside);
@@ -148,16 +175,150 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
         </div>
       ) : (
         <form className="topbar__search" onSubmit={submitSearch}>
-          <Search size={16} className="topbar__search-icon" />
-          <input
+          <CityAutocomplete
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search locations, diseases or health topics..."
+            onChange={(val) => setQuery(val)}
+            onSelect={(item) => {
+              setQuery(item.name);
+              onSearch?.(item.name);
+            }}
+            onSubmit={submitSearch}
+            placeholder={t('topbar.searchPlaceholder', 'Search locations, cities or health topics...')}
           />
         </form>
       )}
 
       <div className="topbar__actions">
+        {/* SIH PS 82 Delhi 72H Quick Nav Badge */}
+        <button
+          type="button"
+          className="sih-ps82-badge-btn"
+          onClick={() => navigate('/delhi-forecast')}
+          title="Switch to Delhi NCR 72H Coupled Forecast"
+        >
+          <span className="sih-live-pulse" />
+          <span>Delhi 72H Forecast</span>
+        </button>
+
+        {/* Demo Scenario Selector */}
+        <div className="topbar__scenario" ref={scenarioRef}>
+          <button
+            type="button"
+            className={`topbar__scenario-btn ${isScenarioActive ? 'topbar__scenario-btn--custom' : ''} ${scenarioOpen ? 'topbar__scenario-btn--active' : ''}`}
+            onClick={() => setScenarioOpen(!scenarioOpen)}
+            title="Demo Scenario Switcher: Force-load High Smog Inversion, Stubble Surge, Clean Baseline, or Live Telemetry"
+          >
+            <span 
+              className="scenario-live-pulse" 
+              style={{ 
+                backgroundColor: scenarioMeta.badgeColor,
+                boxShadow: `0 0 8px ${scenarioMeta.badgeColor}`
+              }} 
+            />
+            <span className="topbar__scenario-label">
+              <span className="scenario-label-prefix">Preset:</span>
+              <span className="scenario-label-name">{scenarioMeta.shortLabel}</span>
+            </span>
+            <ChevronDown size={12} className={scenarioOpen ? 'rotate-180' : ''} />
+          </button>
+
+          {scenarioOpen && (
+            <div className="topbar__dropdown topbar__dropdown--scenario">
+              <div className="topbar__scenario-dropdown-header">
+                <div className="scenario-header-top">
+                  <Sparkles size={13} color="#f59e0b" />
+                  <span>SIMULATION PRESET SWITCHER</span>
+                </div>
+                <div className="scenario-header-sub">
+                  Force-loads atmospheric physics, satellite anomalies & GRAP state
+                </div>
+              </div>
+
+              <div className="topbar__scenario-list">
+                {allScenarios.map((sc) => {
+                  const isSelected = currentScenario === sc.id;
+                  return (
+                    <button
+                      key={sc.id}
+                      type="button"
+                      className={`topbar__scenario-option ${isSelected ? 'topbar__scenario-option--selected' : ''}`}
+                      onClick={() => {
+                        selectScenario(sc.id);
+                        setScenarioOpen(false);
+                      }}
+                    >
+                      <div className="scenario-option__left-bar" style={{ backgroundColor: sc.badgeColor }} />
+                      <div className="scenario-option__content">
+                        <div className="scenario-option__head">
+                          <span className="scenario-option__name">{sc.title}</span>
+                          <span 
+                            className="scenario-option__tag"
+                            style={{ 
+                              borderColor: `${sc.badgeColor}40`, 
+                              color: sc.badgeColor,
+                              backgroundColor: `${sc.badgeColor}15`
+                            }}
+                          >
+                            {sc.tag}
+                          </span>
+                        </div>
+                        <p className="scenario-option__desc">{sc.description}</p>
+                        <div className="scenario-option__metrics">
+                          <span className="metric-pill">AQI: <strong>{sc.aqi}</strong></span>
+                          <span className="metric-pill">PBL: <strong>{sc.pbl}m</strong></span>
+                          <span className="metric-pill">{sc.grapStage}</span>
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <div className="scenario-option__selected-icon">
+                          <CheckCircle size={15} color={sc.badgeColor} />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Language Selector */}
+        <div className="topbar__lang" ref={langRef}>
+          <button 
+            className={`topbar__lang-btn ${langOpen ? 'topbar__lang-btn--active' : ''}`}
+            onClick={() => setLangOpen(!langOpen)}
+            title={t('topbar.selectLanguage', 'Select Language')}
+          >
+            <Globe size={16} />
+            <span className="topbar__lang-code">{currentLanguageMeta.flag} {currentLanguageMeta.nativeName}</span>
+            <ChevronDown size={12} className={langOpen ? 'rotate-180' : ''} />
+          </button>
+          {langOpen && (
+            <div className="topbar__dropdown topbar__dropdown--lang">
+              <div className="topbar__dropdown-title">
+                <Globe size={13} /> {t('topbar.selectLanguage', 'Select Language')}
+              </div>
+              {languagesList.map((lang) => (
+                <button
+                  key={lang.code}
+                  className={`topbar__lang-option ${language === lang.code ? 'topbar__lang-option--active' : ''}`}
+                  onClick={() => {
+                    setLanguage(lang.code);
+                    setLangOpen(false);
+                  }}
+                >
+                  <span className="topbar__lang-flag">{lang.flag}</span>
+                  <span className="topbar__lang-names">
+                    <strong>{lang.nativeName}</strong>
+                    <small>({lang.name})</small>
+                  </span>
+                  {language === lang.code && <CheckCircle size={14} className="topbar__lang-check" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <button className="icon-btn" onClick={toggleTheme} aria-label="Toggle theme">
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
         </button>
@@ -184,7 +345,7 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
             <div className="notification-panel">
               <div className="notification-panel__header">
                 <div className="notification-panel__header-left">
-                  <span className="notification-panel__title">Notifications</span>
+                  <span className="notification-panel__title">{t('topbar.notifications', 'Notifications')}</span>
                   {unreadCount > 0 && (
                     <span className="notification-panel__badge">{unreadCount} unread</span>
                   )}
@@ -195,7 +356,7 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
                       className="notification-panel__mark-read"
                       onClick={handleMarkAllRead}
                     >
-                      Mark all read
+                      {t('topbar.markAllRead', 'Mark all read')}
                     </button>
                   )}
                   {notifications && notifications.length > 0 && (
@@ -203,7 +364,7 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
                       className="notification-panel__dismiss-all"
                       onClick={handleDismissAll}
                     >
-                      Dismiss all
+                      {t('topbar.dismissAll', 'Dismiss all')}
                     </button>
                   )}
                 </div>
@@ -213,8 +374,8 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
                 {!notifications || notifications.length === 0 ? (
                   <div className="notification-empty">
                     <Bell size={24} />
-                    <p>No notifications</p>
-                    <span>All caught up!</span>
+                    <p>{t('topbar.noNotifications', 'No notifications')}</p>
+                    <span>{t('topbar.allCaughtUp', 'All caught up!')}</span>
                   </div>
                 ) : (
                   notifications.slice(0, 20).map((notification, index) => {
@@ -263,10 +424,10 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
           {menuOpen && (
             <div className="topbar__dropdown">
               <button onClick={() => { setMenuOpen(false); navigate('/profile'); }}>
-                <UserIcon size={15} /> Profile
+                <UserIcon size={15} /> {t('nav.profile', 'Profile')}
               </button>
               <button onClick={() => { setMenuOpen(false); logout(); navigate('/login'); }}>
-                <LogOut size={15} /> Logout
+                <LogOut size={15} /> {t('nav.logout', 'Logout')}
               </button>
             </div>
           )}
@@ -772,6 +933,20 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
             right: -20px;
             max-height: 420px;
           }
+
+          .scenario-label-prefix {
+            display: none;
+          }
+
+          .topbar__scenario-btn {
+            padding: 5px 8px;
+            font-size: 11.5px;
+          }
+
+          .topbar__dropdown--scenario {
+            width: 320px;
+            right: -50px;
+          }
         }
 
         @media (max-width: 480px) {
@@ -793,6 +968,15 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
             max-height: 380px;
           }
 
+          .topbar__scenario-btn {
+            padding: 4px 6px;
+          }
+
+          .topbar__dropdown--scenario {
+            width: 285px;
+            right: -75px;
+          }
+
           .notification-item {
             padding: 10px 12px;
           }
@@ -812,6 +996,320 @@ export default function Topbar({ onMenuClick, title, subtitle, onSearch }) {
             width: 100%;
             justify-content: flex-start;
           }
+        }
+
+        /* Language Selector Styles */
+        .topbar__lang {
+          position: relative;
+        }
+
+        .topbar__lang-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 10px;
+          border-radius: 8px;
+          border: 1px solid var(--color-border, #e2e8f0);
+          background: var(--color-bg-secondary, #f7fafc);
+          color: var(--color-text-primary, #1a202c);
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .topbar__lang-btn:hover,
+        .topbar__lang-btn--active {
+          background: var(--color-bg-hover, #edf2f7);
+          border-color: var(--color-primary, #4299e1);
+        }
+
+        .topbar__lang-code {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .rotate-180 {
+          transform: rotate(180deg);
+        }
+
+        .topbar__dropdown--lang {
+          position: absolute;
+          right: 0;
+          top: calc(100% + 8px);
+          width: 220px;
+          background: var(--color-bg-primary, white);
+          border-radius: 12px;
+          border: 1px solid var(--color-border, #e2e8f0);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+          padding: 6px;
+          z-index: 100;
+        }
+
+        .topbar__dropdown-title {
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--color-text-secondary, #718096);
+          padding: 6px 10px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          border-bottom: 1px solid var(--color-border, #e2e8f0);
+          margin-bottom: 4px;
+        }
+
+        .topbar__lang-option {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 10px;
+          border: none;
+          background: transparent;
+          border-radius: 6px;
+          font-size: 13px;
+          color: var(--color-text-primary, #2d3748);
+          cursor: pointer;
+          text-align: left;
+          transition: background 0.15s;
+        }
+
+        .topbar__lang-option:hover {
+          background: var(--color-bg-hover, #f7fafc);
+        }
+
+        .topbar__lang-option--active {
+          background: rgba(66, 153, 225, 0.1);
+          color: var(--color-primary, #3182ce);
+          font-weight: 600;
+        }
+
+        .topbar__lang-flag {
+          font-size: 16px;
+          line-height: 1;
+        }
+
+        .topbar__lang-names {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          line-height: 1.2;
+        }
+
+        .topbar__lang-names small {
+          font-size: 11px;
+          color: var(--color-text-secondary, #718096);
+          font-weight: normal;
+        }
+
+        .topbar__lang-check {
+          color: var(--color-primary, #3182ce);
+        }
+
+        /* Demo Scenario Switcher Styles */
+        .topbar__scenario {
+          position: relative;
+        }
+
+        .topbar__scenario-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px solid var(--color-border, #e2e8f0);
+          background: var(--color-bg-secondary, #f8fafc);
+          color: var(--color-text-primary, #1e293b);
+          font-size: 12.5px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          white-space: nowrap;
+        }
+
+        .topbar__scenario-btn:hover,
+        .topbar__scenario-btn--active {
+          background: var(--color-bg-hover, #f1f5f9);
+          border-color: #38bdf8;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .topbar__scenario-btn--custom {
+          border-color: rgba(249, 115, 22, 0.5);
+          background: rgba(249, 115, 22, 0.06);
+        }
+
+        .scenario-live-pulse {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+          animation: scenario-pulse 2s infinite ease-in-out;
+          flex-shrink: 0;
+        }
+
+        @keyframes scenario-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        .topbar__scenario-label {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+
+        .scenario-label-prefix {
+          font-size: 11px;
+          color: var(--color-text-secondary, #64748b);
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+
+        .scenario-label-name {
+          font-weight: 700;
+          font-size: 12.5px;
+          color: var(--color-text-primary, #0f172a);
+        }
+
+        .topbar__dropdown--scenario {
+          position: absolute;
+          right: 0;
+          top: calc(100% + 8px);
+          width: 370px;
+          max-width: 90vw;
+          background: var(--color-bg-primary, #ffffff);
+          border-radius: 14px;
+          border: 1px solid var(--color-border, #e2e8f0);
+          box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
+          padding: 8px;
+          z-index: 1000;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .topbar__scenario-dropdown-header {
+          padding: 8px 10px 10px;
+          border-bottom: 1px solid var(--color-border, #f1f5f9);
+        }
+
+        .scenario-header-top {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11.5px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          color: var(--color-text-primary, #1e293b);
+        }
+
+        .scenario-header-sub {
+          font-size: 11px;
+          color: var(--color-text-secondary, #64748b);
+          margin-top: 2px;
+        }
+
+        .topbar__scenario-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          max-height: 420px;
+          overflow-y: auto;
+        }
+
+        .topbar__scenario-option {
+          display: flex;
+          align-items: stretch;
+          border: 1px solid var(--color-border, #e2e8f0);
+          background: var(--color-bg-secondary, #f8fafc);
+          border-radius: 10px;
+          padding: 10px 12px;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.2s;
+          position: relative;
+          gap: 10px;
+        }
+
+        .topbar__scenario-option:hover {
+          background: var(--color-bg-hover, #f1f5f9);
+          border-color: #38bdf8;
+          transform: translateY(-1px);
+        }
+
+        .topbar__scenario-option--selected {
+          border-color: #38bdf8;
+          background: rgba(56, 189, 248, 0.08);
+        }
+
+        .scenario-option__left-bar {
+          width: 4px;
+          border-radius: 4px;
+          flex-shrink: 0;
+        }
+
+        .scenario-option__content {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .scenario-option__head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          margin-bottom: 4px;
+        }
+
+        .scenario-option__name {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--color-text-primary, #0f172a);
+          line-height: 1.2;
+        }
+
+        .scenario-option__tag {
+          font-size: 9.5px;
+          font-weight: 800;
+          padding: 2px 6px;
+          border-radius: 6px;
+          border-width: 1px;
+          border-style: solid;
+          letter-spacing: 0.4px;
+          white-space: nowrap;
+        }
+
+        .scenario-option__desc {
+          font-size: 11.5px;
+          color: var(--color-text-secondary, #64748b);
+          line-height: 1.35;
+          margin: 0 0 6px;
+        }
+
+        .scenario-option__metrics {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+
+        .metric-pill {
+          font-size: 10px;
+          background: rgba(0, 0, 0, 0.05);
+          padding: 2px 6px;
+          border-radius: 4px;
+          color: var(--color-text-secondary, #475569);
+        }
+
+        .scenario-option__selected-icon {
+          display: flex;
+          align-items: center;
+          padding-left: 4px;
         }
       `}</style>
     </header>

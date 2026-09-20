@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Moon, Sun, Bell, Server, ShieldCheck } from 'lucide-react';
+import { Moon, Sun, Bell, Server, ShieldCheck, Globe } from 'lucide-react';
 import Layout from '../components/Layout';
 import { Card } from '../components/Common';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { API_BASE_URL } from '../api/client';
 
 function Toggle({ checked, onChange }) {
@@ -21,6 +22,7 @@ function Toggle({ checked, onChange }) {
 
 export default function Settings() {
   const { theme, toggleTheme } = useTheme();
+  const { language, setLanguage, t, languagesList } = useLanguage();
   const [prefs, setPrefs] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('vayu_prefs')) || { alerts: true, weeklyDigest: true, aiInsights: true };
@@ -38,7 +40,31 @@ export default function Settings() {
   };
 
   return (
-    <Layout title="Settings" subtitle="Appearance, notifications, and connection details.">
+    <Layout title={t('nav.settings', 'Settings')} subtitle="Appearance, language, notifications, and connection details.">
+      {/* Language Section */}
+      <Card className="section-card">
+        <div className="card-head">
+          <h3 className="section-title"><Globe size={16} /> Language / भाषा</h3>
+        </div>
+        <div className="settings-row">
+          <div>
+            <div className="settings-row__label">App Language</div>
+            <div className="settings-row__desc">Choose your preferred Indian language for UI, precautions, and video narration.</div>
+          </div>
+          <select 
+            value={language} 
+            onChange={(e) => setLanguage(e.target.value)}
+            className="settings-select"
+          >
+            {languagesList.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.flag} {lang.nativeName} ({lang.name})
+              </option>
+            ))}
+          </select>
+        </div>
+      </Card>
+
       <Card className="section-card">
         <div className="card-head">
           <h3 className="section-title">{theme === 'light' ? <Sun size={16} /> : <Moon size={16} />} Appearance</h3>
@@ -96,6 +122,23 @@ export default function Settings() {
         <ShieldCheck size={16} />
         <p>Your session token is stored locally in this browser and sent with every request to the API.</p>
       </Card>
+
+      <style jsx>{`
+        .settings-select {
+          padding: 8px 14px;
+          border-radius: 8px;
+          border: 1px solid var(--color-border, #e2e8f0);
+          background: var(--color-bg-secondary, #f7fafc);
+          color: var(--color-text-primary, #1a202c);
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          outline: none;
+        }
+        .settings-select:focus {
+          border-color: var(--color-primary, #4299e1);
+        }
+      `}</style>
     </Layout>
   );
 }

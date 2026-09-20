@@ -21,167 +21,11 @@ import {
   Clock,
   Calendar,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Globe,
 } from 'lucide-react';
-
-// Disease progression data
-const DISEASE_PROGRESSION_DATA = {
-  'asthma': {
-    id: 'asthma',
-    name: 'Asthma & COPD Exacerbation',
-    category: 'Airborne',
-    severity: 'HIGH FUTURE RISK',
-    targetOrgan: 'Pulmonary Bronchioles & Lung Parenchyma',
-    color: '#00f2fe',
-    stages: [
-      {
-        stage: 0,
-        title: 'Stage 0 (Present Baseline): Bronchial Hyper-reactivity',
-        description: 'Initial particulate accumulation causes mild smooth muscle contraction and transient nocturnal wheezing.',
-        occlusionPct: 15,
-        fibrosisPct: 8,
-        strainPct: 12,
-        narration: 'At present baseline, airborne pollutants irritate bronchial smooth muscle, triggering periodic airway hyper-reactivity.'
-      },
-      {
-        stage: 1,
-        title: 'Stage 1 (1-Year Horizon): Mucosal Remodeling & Goblet Cell Hyperplasia',
-        description: 'Persistent inflammatory cell infiltration leads to mucus hypersecretion and chronic expiratory airflow limitation.',
-        occlusionPct: 38,
-        fibrosisPct: 24,
-        strainPct: 28,
-        narration: 'At one year, constant particulate deposition thickens bronchial walls, causing progressive expiratory wheezing.'
-      },
-      {
-        stage: 2,
-        title: 'Stage 2 (5-Year Horizon): Alveolar Wall Destruction & Emphysema',
-        description: 'Permanent destruction of inter-alveolar septa reduces gas exchange surface area, causing dyspnea on mild exertion.',
-        occlusionPct: 65,
-        fibrosisPct: 58,
-        strainPct: 54,
-        narration: 'Five years post-exposure, emphysematous tissue breakdown permanently impairs blood oxygenation.'
-      },
-      {
-        stage: 3,
-        title: 'Stage 3 (10-Year Horizon): Chronic Cor Pulmonale & Fibrotic Occlusion',
-        description: 'Severe pulmonary vascular resistance forces right ventricular hypertrophy, leading to chronic cardiopulmonary failure.',
-        occlusionPct: 88,
-        fibrosisPct: 84,
-        strainPct: 82,
-        narration: 'At ten years, extensive pulmonary fibrosis increases right heart strain, requiring long-term supplemental oxygen.'
-      }
-    ],
-    prevention: 'Daily N95 protection during high AQI + Vasaka (Adhatoda) & Sitopaladi Churna halts bronchial fibrotic remodeling.'
-  },
-  'tuberculosis': {
-    id: 'tuberculosis',
-    name: 'Tuberculosis & Chronic Lung Lesions',
-    category: 'Airborne',
-    severity: 'CRITICAL TISSUE NECROSIS RISK',
-    targetOrgan: 'Apical Lung Parenchyma & Pulmonary Lymph Nodes',
-    color: '#ff3d00',
-    stages: [
-      {
-        stage: 0,
-        title: 'Stage 0 (Present Baseline): Primary Ghon Focus',
-        description: 'Inhaled Mycobacterium tuberculosis droplets settle in subpleural alveoli, triggering localized alveolar macrophage engulfment.',
-        occlusionPct: 20,
-        fibrosisPct: 15,
-        strainPct: 10,
-        narration: 'Inhaled Mycobacteria settle in apical lung segments, triggering early immune granuloma formation.'
-      },
-      {
-        stage: 1,
-        title: 'Stage 1 (1-Year Horizon): Caseous Necrosis & Cavitation',
-        description: 'Granulomas undergo central caseous necrosis. Erosion into bronchial trees causes hemoptysis and bacillary shedding.',
-        occlusionPct: 45,
-        fibrosisPct: 35,
-        strainPct: 32,
-        narration: 'At one year, caseous necrosis destroys localized lung parenchyma, forming necrotic cavities.'
-      },
-      {
-        stage: 2,
-        title: 'Stage 2 (5-Year Horizon): Fibrocalcific Volume Reduction',
-        description: 'Multiple cavitating lesions merge. Scars contract lung volume by 40%, leaving chronic chest pain and restrictive pulmonary defect.',
-        occlusionPct: 70,
-        fibrosisPct: 68,
-        strainPct: 62,
-        narration: 'Five years post infection, widespread fibrocalcific scarring contracts entire lung lobes.'
-      },
-      {
-        stage: 3,
-        title: 'Stage 3 (10-Year Horizon): Disseminated Fibrothorax',
-        description: 'Complete destruction of affected lung lobe (fibrothorax) with hematogenous spread to kidneys and spine.',
-        occlusionPct: 92,
-        fibrosisPct: 90,
-        strainPct: 86,
-        narration: 'At ten years, destroyed lung parenchyma undergoes dense fibrotic ossification.'
-      }
-    ],
-    prevention: 'Standard DOTS anti-tubercular therapy combined with Sitopaladi Churna & Chyawanprash regenerates cellular defense.'
-  }
-};
-
-// Get disease data with fallback
-const getDiseaseData = (diseaseName) => {
-  if (!diseaseName) return DISEASE_PROGRESSION_DATA['asthma'];
-  
-  const lowerName = diseaseName.toLowerCase();
-  for (const [key, data] of Object.entries(DISEASE_PROGRESSION_DATA)) {
-    if (lowerName.includes(key) || key.includes(lowerName)) {
-      return data;
-    }
-  }
-  
-  // Fallback for unknown diseases
-  return {
-    id: 'unknown',
-    name: diseaseName,
-    category: 'Airborne',
-    severity: 'ELEVATED FUTURE HAZARD',
-    targetOrgan: 'Pulmonary Airways & Alveolar Membranes',
-    color: '#b388ff',
-    stages: [
-      {
-        stage: 0,
-        title: `Stage 0 (Present Baseline): Early ${diseaseName} Inception`,
-        description: `Initial exposure triggers localized cellular inflammation. Mild symptoms present.`,
-        occlusionPct: 15,
-        fibrosisPct: 8,
-        strainPct: 12,
-        narration: `Present baseline exposure to ${diseaseName} initiates mild inflammatory cascades.`
-      },
-      {
-        stage: 1,
-        title: `Stage 1 (1-Year Horizon): Sub-acute Mucosal Degradation`,
-        description: 'Continuous unmitigated exposure accelerates tissue damage and functional impairment.',
-        occlusionPct: 40,
-        fibrosisPct: 25,
-        strainPct: 30,
-        narration: `At one year, unmanaged ${diseaseName} causes progressive structural tissue remodeling.`
-      },
-      {
-        stage: 2,
-        title: `Stage 2 (5-Year Horizon): Chronic Parenchymal Fibrosis`,
-        description: 'Chronic inflammatory cell infiltration leads to irreversible tissue hardening and organ strain.',
-        occlusionPct: 65,
-        fibrosisPct: 52,
-        strainPct: 58,
-        narration: `At five years, chronic inflammatory scarring causes persistent organ dysfunction.`
-      },
-      {
-        stage: 3,
-        title: `Stage 3 (10-Year Horizon): Advanced Organ Impairment`,
-        description: 'Severe end-stage fibrotic changes impair vital organ capacity by >80%.',
-        occlusionPct: 88,
-        fibrosisPct: 82,
-        strainPct: 85,
-        narration: `At ten years, advanced tissue fibrotic degradation restricts baseline functional capacity.`
-      }
-    ],
-    prevention: 'Early N95 protection, purified hydration, and targeted herbal therapies halt up to 85% of long-term cellular damage.'
-  };
-};
+import { useLanguage } from '../context/LanguageContext';
+import { getLocalizedDiseaseData } from '../data/diseaseProgressionData';
 
 // Anatomical Layer Icons
 const LAYER_ICONS = {
@@ -201,6 +45,8 @@ export default function DiseaseVideoModal({
   onClose, 
   diseaseName = 'Asthma & COPD Exacerbation' 
 }) {
+  const { language: appLang, languagesList, t } = useLanguage();
+  const [videoLang, setVideoLang] = useState(appLang || 'en');
   const [currentStage, setCurrentStage] = useState(1);
   const [currentLayer, setCurrentLayer] = useState('mucosa');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -212,11 +58,17 @@ export default function DiseaseVideoModal({
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const particlesRef = useRef([]);
-  const speechSynthRef = useRef(null);
   const progressIntervalRef = useRef(null);
   const modalRef = useRef(null);
 
-  const diseaseData = getDiseaseData(diseaseName);
+  // Sync with app language when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setVideoLang(appLang || 'en');
+    }
+  }, [isOpen, appLang]);
+
+  const diseaseData = getLocalizedDiseaseData(diseaseName, videoLang);
   const stageData = diseaseData.stages[currentStage] || diseaseData.stages[0];
 
   // Initialize particles
@@ -405,12 +257,26 @@ export default function DiseaseVideoModal({
     };
   }, [isPlaying]);
 
-  // Speech synthesis
+  // Speech synthesis with multi-language Indian voice selection
   const speakNarration = useCallback((text) => {
     if (!window.speechSynthesis) return;
     
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
+    
+    const langConfig = languagesList.find(l => l.code === videoLang);
+    const targetVoiceLang = langConfig?.voiceLang || 'en-IN';
+    utterance.lang = targetVoiceLang;
+    
+    // Pick the best available speech synthesis voice for this language
+    const voices = window.speechSynthesis.getVoices();
+    const matchingVoice = voices.find(
+      v => v.lang === targetVoiceLang || v.lang.replace('_', '-').startsWith(videoLang)
+    );
+    if (matchingVoice) {
+      utterance.voice = matchingVoice;
+    }
+    
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
     
@@ -419,7 +285,7 @@ export default function DiseaseVideoModal({
     utterance.onerror = () => setIsSpeaking(false);
     
     window.speechSynthesis.speak(utterance);
-  }, []);
+  }, [videoLang, languagesList]);
 
   // Handle stage change
   const handleStageChange = (stageIndex) => {
@@ -494,24 +360,49 @@ export default function DiseaseVideoModal({
             </div>
             <div>
               <h3 className="video-modal-title">
-                {diseaseData.name} — Future Deep Impact Video Analysis
+                {diseaseData.name} — {t('video.title', 'Future Deep Impact Video Analysis')}
               </h3>
               <div className="video-modal-badges">
                 <span className="video-badge video-badge--route">
-                  {diseaseData.category === 'Airborne' ? '🌬️ Airborne Route' : '💧 Waterborne Route'}
+                  {diseaseData.category}
                 </span>
                 <span className="video-badge video-badge--severity">
                   {diseaseData.severity}
                 </span>
                 <span className="video-badge video-badge--target">
-                  Target Organ: {diseaseData.targetOrgan}
+                  {diseaseData.targetOrgan}
                 </span>
               </div>
             </div>
           </div>
-          <button className="video-modal-close" onClick={onClose}>
-            <X size={20} />
-          </button>
+          
+          <div className="video-modal-header-right">
+            {/* Language Selector */}
+            <div className="video-lang-select-box">
+              <Globe size={14} className="text-cyan" />
+              <select
+                value={videoLang}
+                onChange={(e) => {
+                  setVideoLang(e.target.value);
+                  if (isSpeaking) {
+                    window.speechSynthesis.cancel();
+                    setIsSpeaking(false);
+                  }
+                }}
+                className="video-lang-dropdown"
+              >
+                {languagesList.map((lang) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.flag} {lang.nativeName} ({lang.name})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button className="video-modal-close" onClick={onClose} title={t('common.close', 'Close')}>
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Main Content */}
@@ -525,10 +416,7 @@ export default function DiseaseVideoModal({
                 <span>🔴 LIVE SIMULATION</span>
                 <span>•</span>
                 <span>
-                  {currentStage === 0 ? 'STAGE 0 (PRESENT)' : 
-                   currentStage === 1 ? '1-YEAR HORIZON' :
-                   currentStage === 2 ? '5-YEAR HORIZON' : 
-                   '10-YEAR FIBROTIC HORIZON'}
+                  {stageData.title}
                 </span>
               </div>
             </div>
@@ -553,7 +441,7 @@ export default function DiseaseVideoModal({
                 onClick={togglePlay}
               >
                 {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-                <span>{isPlaying ? 'Pause Video' : 'Play Video'}</span>
+                <span>{isPlaying ? t('video.pause', 'Pause Video') : t('video.play', 'Play Video')}</span>
               </button>
 
               <button 
@@ -569,7 +457,7 @@ export default function DiseaseVideoModal({
                 }}
               >
                 {isSpeaking ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                <span>{isSpeaking ? 'Stop Audio' : 'Listen Audio'}</span>
+                <span>{isSpeaking ? t('video.stopAudio', 'Stop Audio') : t('video.listenAudio', 'Listen Audio')}</span>
               </button>
 
               <div className="video-progress">
@@ -591,7 +479,7 @@ export default function DiseaseVideoModal({
             {showNarration && (
               <div className="video-narration">
                 <span className="video-narration-icon">🎙️</span>
-                <strong>Clinical Audio Narration:</strong>
+                <strong>{t('video.narration', 'Clinical Audio Narration')} ({videoLang.toUpperCase()}):</strong>
                 <span>{stageData.narration}</span>
               </div>
             )}
@@ -600,8 +488,8 @@ export default function DiseaseVideoModal({
           {/* Right Panel - Impact */}
           <div className="video-impact-panel">
             <div className="video-impact-header">
-              <span>⏳ Future Disease Progression Timeline</span>
-              <span className="video-impact-sub">Select Stage to View Impact</span>
+              <span>⏳ {t('video.progressionTimeline', 'Future Disease Progression Timeline')}</span>
+              <span className="video-impact-sub">{t('video.selectStage', 'Select Stage to View Impact')}</span>
             </div>
 
             {/* Stage Buttons */}
@@ -612,7 +500,7 @@ export default function DiseaseVideoModal({
                   className={`video-stage-btn ${currentStage === idx ? 'video-stage-btn--active' : ''}`}
                   onClick={() => handleStageChange(idx)}
                 >
-                  Stage {idx} {idx === 0 ? '(Present)' : 
+                  Stage {idx} {idx === 0 ? '(0Y)' : 
                               idx === 1 ? '(1Y)' : 
                               idx === 2 ? '(5Y)' : '(10Y)'}
                 </button>
@@ -627,11 +515,11 @@ export default function DiseaseVideoModal({
 
             {/* Metrics */}
             <div className="video-metrics">
-              <h4 className="video-metrics-title">🫁 Organ Impairment & Pathology Metrics</h4>
+              <h4 className="video-metrics-title">🫁 {t('video.organImpairment', 'Organ Impairment & Pathology Metrics')}</h4>
               
               <div className="video-metric">
                 <div className="video-metric-label">
-                  <span>Airway / Tissue Occlusion</span>
+                  <span>{t('video.airwayOcclusion', 'Airway / Tissue Occlusion')}</span>
                   <span style={{ color: '#ff3d00', fontWeight: 700 }}>{stageData.occlusionPct}%</span>
                 </div>
                 <div className="video-metric-bar">
@@ -644,7 +532,7 @@ export default function DiseaseVideoModal({
 
               <div className="video-metric">
                 <div className="video-metric-label">
-                  <span>Parenchymal Fibrosis</span>
+                  <span>{t('video.parenchymalFibrosis', 'Parenchymal Fibrosis')}</span>
                   <span style={{ color: '#ff9100', fontWeight: 700 }}>{stageData.fibrosisPct}%</span>
                 </div>
                 <div className="video-metric-bar">
@@ -657,7 +545,7 @@ export default function DiseaseVideoModal({
 
               <div className="video-metric">
                 <div className="video-metric-label">
-                  <span>Organ Workload & Systemic Strain</span>
+                  <span>{t('video.systemicStrain', 'Organ Workload & Systemic Strain')}</span>
                   <span style={{ color: '#b388ff', fontWeight: 700 }}>{stageData.strainPct}%</span>
                 </div>
                 <div className="video-metric-bar">
@@ -671,7 +559,7 @@ export default function DiseaseVideoModal({
 
             {/* Prevention */}
             <div className="video-prevention">
-              <h4 className="video-prevention-title">🌿 How to Halt & Reverse Future Progression:</h4>
+              <h4 className="video-prevention-title">🌿 {t('video.howToHalt', 'How to Halt & Reverse Future Progression')}:</h4>
               <p className="video-prevention-text">{diseaseData.prevention}</p>
             </div>
           </div>
@@ -728,6 +616,41 @@ export default function DiseaseVideoModal({
           display: flex;
           gap: 12px;
           flex: 1;
+        }
+
+        .video-modal-header-right {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .video-lang-select-box {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(15, 23, 42, 0.8);
+          border: 1px solid rgba(0, 242, 254, 0.3);
+          border-radius: 8px;
+          padding: 4px 10px;
+        }
+
+        .text-cyan {
+          color: #00f2fe;
+        }
+
+        .video-lang-dropdown {
+          background: transparent;
+          border: none;
+          color: #fff;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          outline: none;
+        }
+
+        .video-lang-dropdown option {
+          background: #0f172a;
+          color: #fff;
         }
 
         .video-modal-icon {

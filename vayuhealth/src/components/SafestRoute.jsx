@@ -35,10 +35,10 @@ import {
 import indiaLocations from '../data/indiaLocations';
 
 export default function SafestRoute({ className = '' }) {
-  const [origin, setOrigin] = useState('Dombivli');
-  const [destination, setDestination] = useState('BKC, Mumbai');
-  const [originInput, setOriginInput] = useState('Dombivli');
-  const [destInput, setDestInput] = useState('BKC, Mumbai');
+  const [origin, setOrigin] = useState('Anand Vihar, Delhi');
+  const [destination, setDestination] = useState('Connaught Place / ITO');
+  const [originInput, setOriginInput] = useState('Anand Vihar, Delhi');
+  const [destInput, setDestInput] = useState('Connaught Place / ITO');
   const [routeData, setRouteData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -97,14 +97,25 @@ export default function SafestRoute({ className = '' }) {
     setShowSuggestions(false);
   };
 
+  const ROUTE_PRESETS = [
+    { label: '🏛️ Delhi: Anand Vihar ➔ Connaught Place', origin: 'Anand Vihar, Delhi', dest: 'Connaught Place / ITO' },
+    { label: '🏛️ Delhi: Rohini ➔ Dwarka Sector 8', origin: 'Rohini Sector 16', dest: 'Dwarka Sector 8' },
+    { label: '🏛️ Delhi NCR: Noida Sec 62 ➔ RK Puram', origin: 'Noida Sector 62', dest: 'R.K. Puram, Delhi' },
+    { label: '🌊 Maharashtra: Dombivli ➔ BKC Mumbai', origin: 'Dombivli', dest: 'BKC, Mumbai' },
+    { label: '🌊 Maharashtra: Thane ➔ Kalyan', origin: 'Thane Majiwada', dest: 'Kalyan Khadakpada' },
+  ];
+
   // Calculate route
-  const calculateRoute = useCallback(async () => {
-    if (!origin.trim() || !destination.trim()) {
+  const calculateRoute = useCallback(async (customOrigin, customDest) => {
+    const o = customOrigin || origin;
+    const d = customDest || destination;
+
+    if (!o?.trim() || !d?.trim()) {
       setError('Please enter both origin and destination');
       return;
     }
 
-    if (origin.trim().toLowerCase() === destination.trim().toLowerCase()) {
+    if (o.trim().toLowerCase() === d.trim().toLowerCase()) {
       setError('Origin and destination cannot be the same');
       return;
     }
@@ -113,10 +124,10 @@ export default function SafestRoute({ className = '' }) {
     setError(null);
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Simulate API calculation delay
+      await new Promise(resolve => setTimeout(resolve, 400));
       
-      const route = generateSafeRoute(origin, destination);
+      const route = generateSafeRoute(o, d);
       setRouteData(route);
       setExpanded(true);
     } catch (err) {
@@ -125,6 +136,19 @@ export default function SafestRoute({ className = '' }) {
       setLoading(false);
     }
   }, [origin, destination]);
+
+  // Initial calculation on mount
+  useEffect(() => {
+    calculateRoute('Anand Vihar, Delhi', 'Connaught Place / ITO');
+  }, []);
+
+  const handleSelectPreset = (preset) => {
+    setOrigin(preset.origin);
+    setOriginInput(preset.origin);
+    setDestination(preset.dest);
+    setDestInput(preset.dest);
+    calculateRoute(preset.origin, preset.dest);
+  };
 
   // Handle waypoint click on map
   const handleWaypointClick = (index) => {
@@ -209,6 +233,23 @@ export default function SafestRoute({ className = '' }) {
 
       {expanded && (
         <div className="safest-route__body">
+          {/* Quick Preset Route Selector */}
+          <div className="route-presets-container">
+            <span className="route-presets-title">⚡ Quick Corridor Presets:</span>
+            <div className="route-presets-chips">
+              {ROUTE_PRESETS.map((preset, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`route-preset-chip ${origin === preset.origin && destination === preset.dest ? 'route-preset-chip--active' : ''}`}
+                  onClick={() => handleSelectPreset(preset)}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Search Bar */}
           <div className="safest-route__search">
             <div className="safest-route__search-group">
@@ -221,7 +262,7 @@ export default function SafestRoute({ className = '' }) {
                   type="text"
                   value={originInput}
                   onChange={(e) => handleOriginChange(e.target.value)}
-                  placeholder="e.g. Dombivli, Thane"
+                  placeholder="e.g. Anand Vihar, Delhi"
                   className="safest-route__search-input"
                 />
                 {originSuggestions.length > 0 && (
@@ -251,7 +292,7 @@ export default function SafestRoute({ className = '' }) {
                   type="text"
                   value={destInput}
                   onChange={(e) => handleDestChange(e.target.value)}
-                  placeholder="e.g. Central Park, BKC"
+                  placeholder="e.g. Connaught Place / ITO, Delhi"
                   className="safest-route__search-input"
                 />
                 {destSuggestions.length > 0 && (
@@ -370,14 +411,15 @@ export default function SafestRoute({ className = '' }) {
 
       <style jsx>{`
         .safest-route {
-          background: rgba(15, 23, 42, 0.95);
-          border: 1px solid rgba(0, 242, 254, 0.25);
-          border-left: 4px solid #00e676;
+          background: var(--color-bg-primary, #ffffff);
+          border: 1px solid var(--color-border, #e2e8f0);
+          border-left: 4px solid #10b981;
           border-radius: 16px;
           padding: 1.5rem;
           margin-bottom: 1.5rem;
-          color: #fff;
+          color: var(--color-text-primary, #1e293b);
           width: 100%;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
         }
 
         .safest-route__header {
@@ -396,32 +438,32 @@ export default function SafestRoute({ className = '' }) {
         .safest-route__icon {
           width: 40px;
           height: 40px;
-          background: rgba(0, 242, 254, 0.15);
+          background: rgba(16, 185, 129, 0.12);
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          color: #00f2fe;
+          color: #10b981;
         }
 
         .safest-route__title {
           font-size: 1.1rem;
           font-weight: 700;
           margin: 0;
-          color: #fff;
+          color: var(--color-text-primary, #1e293b);
         }
 
         .safest-route__subtitle {
           font-size: 0.85rem;
-          color: #94a3b8;
+          color: var(--color-text-secondary, #64748b);
           margin: 2px 0 0 0;
         }
 
         .safest-route__toggle {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #94a3b8;
+          background: var(--color-bg-secondary, #f1f5f9);
+          border: 1px solid var(--color-border, #e2e8f0);
+          color: var(--color-text-secondary, #64748b);
           width: 32px;
           height: 32px;
           border-radius: 8px;
@@ -434,7 +476,8 @@ export default function SafestRoute({ className = '' }) {
         }
 
         .safest-route__toggle:hover {
-          background: rgba(255, 255, 255, 0.1);
+          background: var(--color-bg-hover, #e2e8f0);
+          color: var(--color-text-primary, #1e293b);
         }
 
         .safest-route__body {
@@ -444,15 +487,61 @@ export default function SafestRoute({ className = '' }) {
           gap: 1rem;
         }
 
+        /* Route Presets */
+        .route-presets-container {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .route-presets-title {
+          font-size: 0.72rem;
+          font-weight: 700;
+          color: #94a3b8;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .route-presets-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        .route-preset-chip {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #cbd5e1;
+          padding: 5px 10px;
+          border-radius: 6px;
+          font-size: 11.5px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .route-preset-chip:hover {
+          background: rgba(56, 189, 248, 0.15);
+          border-color: #38bdf8;
+          color: #ffffff;
+        }
+
+        .route-preset-chip--active {
+          background: #10b981 !important;
+          border-color: #10b981 !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+        }
+
         /* Search Bar */
         .safest-route__search {
           display: flex;
           gap: 12px;
           flex-wrap: wrap;
-          background: rgba(0, 0, 0, 0.3);
+          background: var(--color-bg-secondary, #f8fafc);
           padding: 14px;
           border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid var(--color-border, #e2e8f0);
         }
 
         .safest-route__search-group {
@@ -464,7 +553,7 @@ export default function SafestRoute({ className = '' }) {
           display: block;
           font-size: 0.72rem;
           font-weight: 700;
-          color: #94a3b8;
+          color: var(--color-text-secondary, #64748b);
           margin-bottom: 4px;
         }
 
@@ -481,22 +570,21 @@ export default function SafestRoute({ className = '' }) {
           width: 100%;
           padding: 8px 12px;
           border-radius: 8px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          background: rgba(255, 255, 255, 0.05);
-          color: #fff;
+          border: 1px solid var(--color-border, #cbd5e1);
+          background: var(--color-bg-primary, #ffffff);
+          color: var(--color-text-primary, #1e293b);
           font-size: 0.85rem;
           transition: all 0.2s;
         }
 
         .safest-route__search-input:focus {
           outline: none;
-          border-color: #00f2fe;
-          box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.1);
-          background: rgba(255, 255, 255, 0.08);
+          border-color: #10b981;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
 
         .safest-route__search-input::placeholder {
-          color: #64748b;
+          color: var(--color-text-secondary, #94a3b8);
         }
 
         .safest-route__suggestions {
@@ -504,9 +592,10 @@ export default function SafestRoute({ className = '' }) {
           top: calc(100% + 4px);
           left: 0;
           right: 0;
-          background: #1a2332;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: var(--color-bg-primary, #ffffff);
+          border: 1px solid var(--color-border, #e2e8f0);
           border-radius: 8px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
           overflow: hidden;
           z-index: 50;
           max-height: 200px;
@@ -521,15 +610,15 @@ export default function SafestRoute({ className = '' }) {
           width: 100%;
           background: none;
           border: none;
-          color: #cbd5e1;
+          color: var(--color-text-primary, #334155);
           font-size: 13px;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.15s;
         }
 
         .safest-route__suggestion:hover {
-          background: rgba(0, 242, 254, 0.1);
-          color: #fff;
+          background: var(--color-bg-hover, #f1f5f9);
+          color: var(--color-primary, #10b981);
         }
 
         .safest-route__search-btn {
@@ -537,8 +626,8 @@ export default function SafestRoute({ className = '' }) {
           align-items: center;
           gap: 8px;
           padding: 8px 20px;
-          background: linear-gradient(135deg, #00e676, #00f2fe);
-          color: #000;
+          background: linear-gradient(135deg, #10b981, #06b6d4);
+          color: #ffffff;
           font-weight: 700;
           border: none;
           border-radius: 8px;
@@ -547,11 +636,12 @@ export default function SafestRoute({ className = '' }) {
           white-space: nowrap;
           align-self: flex-end;
           height: 40px;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         }
 
         .safest-route__search-btn:hover:not(:disabled) {
           transform: translateY(-1px);
-          box-shadow: 0 4px 16px rgba(0, 230, 118, 0.3);
+          box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
         }
 
         .safest-route__search-btn:disabled {
@@ -574,19 +664,19 @@ export default function SafestRoute({ className = '' }) {
           align-items: center;
           gap: 8px;
           padding: 10px 14px;
-          background: rgba(229, 62, 62, 0.1);
-          border: 1px solid #e53e3e;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid #ef4444;
           border-radius: 8px;
-          color: #fc8181;
+          color: #dc2626;
           font-size: 14px;
         }
 
         /* Risk Summary */
         .safest-route__risk-summary {
           padding: 14px 16px;
-          background: rgba(255, 255, 255, 0.03);
+          background: var(--color-bg-secondary, #f8fafc);
           border-radius: 10px;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          border: 1px solid var(--color-border, #e2e8f0);
         }
 
         .safest-route__risk-badge {
@@ -603,13 +693,13 @@ export default function SafestRoute({ className = '' }) {
 
         .safest-route__risk-description {
           font-size: 14px;
-          color: #cbd5e1;
+          color: var(--color-text-primary, #334155);
           margin: 0 0 12px 0;
         }
 
         .safest-route__recommendations {
           padding-top: 12px;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          border-top: 1px solid var(--color-border, #e2e8f0);
         }
 
         .safest-route__recommendations-title {
@@ -618,14 +708,14 @@ export default function SafestRoute({ className = '' }) {
           gap: 6px;
           font-size: 13px;
           font-weight: 600;
-          color: #94a3b8;
+          color: var(--color-text-secondary, #64748b);
           margin: 0 0 6px 0;
         }
 
         .safest-route__recommendations-list {
           margin: 0;
           padding-left: 20px;
-          color: #cbd5e1;
+          color: var(--color-text-primary, #475569);
           font-size: 13px;
           line-height: 1.6;
         }
@@ -645,8 +735,8 @@ export default function SafestRoute({ className = '' }) {
           justify-content: space-between;
           align-items: center;
           padding: 10px 14px;
-          background: rgba(0, 0, 0, 0.3);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: var(--color-bg-secondary, #f8fafc);
+          border: 1px solid var(--color-border, #e2e8f0);
           border-bottom: none;
           border-radius: 12px 12px 0 0;
         }
@@ -657,7 +747,7 @@ export default function SafestRoute({ className = '' }) {
           gap: 6px;
           font-size: 13px;
           font-weight: 600;
-          color: #cbd5e1;
+          color: var(--color-text-primary, #1e293b);
         }
 
         .safest-route__map-btn {
@@ -665,18 +755,18 @@ export default function SafestRoute({ className = '' }) {
           align-items: center;
           gap: 6px;
           padding: 4px 12px;
-          background: rgba(0, 242, 254, 0.1);
-          border: 1px solid rgba(0, 242, 254, 0.2);
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.2);
           border-radius: 6px;
-          color: #00f2fe;
+          color: #10b981;
           font-size: 12px;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
         }
 
         .safest-route__map-btn:hover {
-          background: rgba(0, 242, 254, 0.2);
+          background: rgba(16, 185, 129, 0.2);
         }
 
         /* Responsive */

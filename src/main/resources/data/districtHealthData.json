@@ -1,20 +1,47 @@
 [
   {
+    "district": "East Delhi",
+    "state": "Delhi",
+    "disease": "Acute Bronchitis & Asthma Exacerbation",
+    "type": "Airborne",
+    "severity": "High",
+    "casesPercentage": 14.8,
+    "lastUpdated": "2026-08-20T10:00:00.000+00:00"
+  },
+  {
+    "district": "New Delhi",
+    "state": "Delhi",
+    "disease": "Allergic Rhinitis & COPD",
+    "type": "Airborne",
+    "severity": "High",
+    "casesPercentage": 11.4,
+    "lastUpdated": "2026-08-20T10:00:00.000+00:00"
+  },
+  {
+    "district": "North Delhi",
+    "state": "Delhi",
+    "disease": "Acute Respiratory Infection",
+    "type": "Airborne",
+    "severity": "High",
+    "casesPercentage": 13.2,
+    "lastUpdated": "2026-08-20T10:00:00.000+00:00"
+  },
+  {
+    "district": "South Delhi",
+    "state": "Delhi",
+    "disease": "Asthma",
+    "type": "Airborne",
+    "severity": "Moderate",
+    "casesPercentage": 9.6,
+    "lastUpdated": "2026-08-20T10:00:00.000+00:00"
+  },
+  {
     "district": "Thane",
     "state": "Maharashtra",
     "disease": "Acute Respiratory Infection",
     "type": "Airborne",
     "severity": "High",
     "casesPercentage": 9.2,
-    "lastUpdated": "2026-07-15T10:00:00.000+00:00"
-  },
-  {
-    "district": "Thane",
-    "state": "Maharashtra",
-    "disease": "Typhoid",
-    "type": "Waterborne",
-    "severity": "Moderate",
-    "casesPercentage": 5.3,
     "lastUpdated": "2026-07-15T10:00:00.000+00:00"
   },
   {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X, MapPin, AlertCircle, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
 // Leaflet imports
-import { MapContainer, TileLayer, CircleMarker, Popup, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, Tooltip, ZoomControl, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -14,19 +14,36 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Map Resizer component to ensure Leaflet recalculates dimensions when modal opens
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    const t1 = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    const t2 = setTimeout(() => {
+      map.invalidateSize();
+    }, 400);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [map]);
+  return null;
+}
+
 // India location data
 const INDIA_LOCATIONS = [
+  // Delhi NCR (Primary Focus - CPCB / MoEFCC)
+  { name: "Anand Vihar, Delhi", state: "Delhi", lat: 28.6400, lng: 77.3100, aqi: 418, status: "Hazardous", cases: "48,200" },
+  { name: "Connaught Place, Delhi", state: "Delhi", lat: 28.6300, lng: 77.2100, aqi: 185, status: "Unhealthy", cases: "39,100" },
+
   // Maharashtra
-  { name: "Dombivli", state: "Maharashtra", lat: 19.2183, lng: 73.0869, aqi: 55, status: "Moderate", cases: "12,400" },
   { name: "BKC, Mumbai", state: "Maharashtra", lat: 19.0600, lng: 72.8600, aqi: 162, status: "Unhealthy", cases: "38,500" },
   { name: "Pune", state: "Maharashtra", lat: 18.5204, lng: 73.8567, aqi: 128, status: "Unhealthy Sensitive", cases: "21,000" },
   { name: "Nagpur", state: "Maharashtra", lat: 21.1458, lng: 79.0882, aqi: 88, status: "Moderate", cases: "16,500" },
   { name: "Nashik", state: "Maharashtra", lat: 19.9975, lng: 73.7898, aqi: 75, status: "Moderate", cases: "11,200" },
   { name: "Kolhapur", state: "Maharashtra", lat: 16.7050, lng: 74.2433, aqi: 48, status: "Good", cases: "5,600" },
-  
-  // Delhi NCR
-  { name: "Anand Vihar, Delhi", state: "Delhi", lat: 28.6400, lng: 77.3100, aqi: 342, status: "Hazardous", cases: "42,800" },
-  { name: "Connaught Place, Delhi", state: "Delhi", lat: 28.6300, lng: 77.2100, aqi: 185, status: "Unhealthy", cases: "39,100" },
   
   // Uttar Pradesh & Bihar
   { name: "Charbagh, Lucknow", state: "Uttar Pradesh", lat: 26.8300, lng: 80.9200, aqi: 280, status: "Very Unhealthy", cases: "58,900" },
@@ -108,24 +125,33 @@ const Legend = () => {
   );
 };
 
-// Map Marker Component
+// Map Marker Component with Permanent Region Name Tooltip
 const MapMarker = ({ location }) => {
   const color = getAQIColor(location.aqi);
   const status = getAQIStatus(location.aqi);
-  const radius = location.aqi > 200 ? 14 : location.aqi > 100 ? 11 : 9;
+  const radius = location.aqi > 200 ? 13 : location.aqi > 100 ? 11 : 9;
 
   return (
     <CircleMarker
       center={[location.lat, location.lng]}
       radius={radius}
       pathOptions={{
-        color: color,
+        color: '#ffffff',
         fillColor: color,
-        fillOpacity: 0.8,
+        fillOpacity: 0.95,
         weight: 2,
         opacity: 1,
       }}
     >
+      <Tooltip permanent direction="top" offset={[0, -10]} className="region-name-tooltip">
+        <div className="tooltip-region-badge">
+          <span className="tooltip-region-name">{location.name}</span>
+          <span className="tooltip-region-aqi" style={{ backgroundColor: color }}>
+            {location.aqi}
+          </span>
+        </div>
+      </Tooltip>
+
       <Popup>
         <div className="map-popup">
           <h4 className="map-popup__title">{location.name}</h4>
@@ -201,20 +227,27 @@ export default function AQIMapModal({ isOpen, onClose }) {
             </div>
             <div>
               <h3 className="aqi-map-modal-title">
-                Interactive All-India AQI Map
+                Interactive All-India Satellite AQI Map
               </h3>
               <p className="aqi-map-modal-subtitle">
-                Real-time color-coded environmental & hospital surveillance markers across all Indian states & union territories
+                Satellite surveillance with live regional air quality markers and hospital surveillance across India
               </p>
             </div>
           </div>
-          <button 
-            className="aqi-map-modal-close"
-            onClick={onClose}
-            aria-label="Close map"
-          >
-            <X size={24} />
-          </button>
+
+          <div className="aqi-map-modal-header-right">
+            <div className="satellite-indicator-badge">
+              🛰️ High-Resolution Satellite View
+            </div>
+
+            <button 
+              className="aqi-map-modal-close"
+              onClick={onClose}
+              aria-label="Close map"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Legend */}
@@ -224,7 +257,7 @@ export default function AQIMapModal({ isOpen, onClose }) {
         <div className="aqi-map-container">
           {isMapReady ? (
             <MapContainer
-              key="india-map"
+              key="india-satellite-map"
               center={center}
               zoom={5}
               className="aqi-leaflet-map"
@@ -232,10 +265,19 @@ export default function AQIMapModal({ isOpen, onClose }) {
               ref={mapRef}
             >
               <ZoomControl position="bottomright" />
+              <MapResizer />
               
+              {/* Satellite Imagery Base Layer */}
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                attribution='&copy; Esri, Maxar, Earthstar Geographics'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={18}
+              />
+
+              {/* Geographic Place Names & State Boundaries Layer */}
+              <TileLayer
+                attribution='&copy; Esri'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
                 maxZoom={18}
               />
 
@@ -246,7 +288,7 @@ export default function AQIMapModal({ isOpen, onClose }) {
           ) : (
             <div className="aqi-map-loading">
               <div className="aqi-map-loading__spinner" />
-              <p>Loading map...</p>
+              <p>Loading India satellite surveillance map...</p>
             </div>
           )}
         </div>
@@ -280,8 +322,8 @@ export default function AQIMapModal({ isOpen, onClose }) {
           left: 0;
           width: 100vw;
           height: 100vh;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(10px);
+          background: rgba(15, 23, 42, 0.6);
+          backdrop-filter: blur(8px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -300,68 +342,137 @@ export default function AQIMapModal({ isOpen, onClose }) {
           width: 95vw;
           max-width: 1150px;
           max-height: 92vh;
-          background: rgba(15, 23, 42, 0.96);
-          border: 1px solid rgba(0, 242, 254, 0.35);
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.2);
+          background: var(--color-bg-primary, #ffffff);
+          border: 1px solid var(--color-border, #e2e8f0);
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
           padding: 1.5rem;
           border-radius: 16px;
-          color: #fff;
+          color: var(--color-text-primary, #0f172a);
           display: flex;
           flex-direction: column;
           animation: slideUp 0.3s ease;
         }
 
-        @keyframes slideUp {
-          from { transform: translateY(30px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Header */
         .aqi-map-modal-header {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: center;
           margin-bottom: 1rem;
           flex-shrink: 0;
+          flex-wrap: wrap;
+          gap: 12px;
         }
 
         .aqi-map-modal-header-left {
           display: flex;
           gap: 12px;
+          align-items: center;
           flex: 1;
         }
 
         .aqi-map-modal-icon {
           width: 44px;
           height: 44px;
-          background: rgba(0, 242, 254, 0.15);
-          border-radius: 10px;
+          background: rgba(16, 185, 129, 0.12);
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          color: #00f2fe;
+          color: #10b981;
+        }
+
+        .aqi-map-modal-header-right {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .satellite-indicator-badge {
+          display: flex;
+          align-items: center;
+          background: #0f172a;
+          color: #38bdf8;
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 11.5px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .aqi-map-modal-title {
-          font-size: 1.2rem;
-          font-weight: 800;
-          margin: 0 0 2px 0;
-          color: #fff;
+          font-size: 1.25rem;
+          font-weight: 700;
+          margin: 0;
+          color: var(--color-text-primary, #0f172a);
         }
 
         .aqi-map-modal-subtitle {
-          font-size: 0.85rem;
-          color: #94a3b8;
-          margin: 0;
+          font-size: 0.82rem;
+          color: var(--color-text-secondary, #64748b);
+          margin: 2px 0 0 0;
         }
 
         .aqi-map-modal-close {
-          width: 38px;
-          height: 38px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+          color: #64748b;
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .aqi-map-modal-close:hover {
+          background: #e2e8f0;
+          color: #0f172a;
+        }
+
+        /* Region Name Tooltip on Satellite Map */
+        :global(.region-name-tooltip) {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+
+        :global(.region-name-tooltip::before) {
+          display: none !important;
+        }
+
+        :global(.tooltip-region-badge) {
+          display: inline-flex;
+          align-items: center;
+          background: rgba(15, 23, 42, 0.88);
+          backdrop-filter: blur(4px);
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          border-radius: 6px;
+          padding: 2px 6px;
+          gap: 5px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+          pointer-events: none;
+        }
+
+        :global(.tooltip-region-name) {
+          font-size: 11px;
+          font-weight: 700;
+          color: #ffffff;
+          white-space: nowrap;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        :global(.tooltip-region-aqi) {
+          font-size: 10px;
+          font-weight: 800;
+          color: #ffffff;
+          padding: 1px 4px;
+          border-radius: 4px;
+        }
           color: #fff;
           display: flex;
           align-items: center;
@@ -412,12 +523,13 @@ export default function AQIMapModal({ isOpen, onClose }) {
 
         /* Map Container */
         .aqi-map-container {
-          flex: 1;
-          min-height: 400px;
+          height: 520px;
+          min-height: 480px;
+          width: 100%;
           border-radius: 12px;
           overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: #090d16;
+          border: 1px solid #e2e8f0;
+          background: #0f172a;
           position: relative;
         }
 

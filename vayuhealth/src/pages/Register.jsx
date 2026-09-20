@@ -1,10 +1,22 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Wind, Loader2, CheckCircle2, Mail, Lock, User, MapPin, Building2, Leaf, Sparkles, Shield, Activity, Brain } from 'lucide-react';
+import { 
+  Wind, 
+  Loader2, 
+  CheckCircle2, 
+  Mail, 
+  Lock, 
+  User, 
+  MapPin, 
+  Building2, 
+  Leaf, 
+  Sparkles, 
+  Shield, 
+  Activity, 
+  Brain 
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-// Import images
-import forestBg from '../assets/forest.jpg';
+import AmbientWindBackground from '../components/AmbientWindBackground';
 
 export default function Register() {
   const { register, loading } = useAuth();
@@ -13,9 +25,9 @@ export default function Register() {
     name: '', 
     email: '', 
     password: '', 
-    district: '', 
-    city: '', 
-    state: '' 
+    district: 'East Delhi', 
+    city: 'Anand Vihar, Delhi', 
+    state: 'Delhi' 
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -49,43 +61,44 @@ export default function Register() {
           {/* Brand - Logo */}
           <div className="register-brand">
             <div className="register-brand-icon">
-              <Leaf size={24} strokeWidth={2.5} />
+              <Leaf size={22} strokeWidth={2.5} />
             </div>
             <div>
               <div className="register-brand-name">VayuHealth</div>
-              <div className="register-brand-sub">Environmental Health</div>
+              <div className="register-brand-sub">Environmental Health Intelligence</div>
             </div>
           </div>
 
           {/* Hero Section */}
           <div className="register-hero">
             <h1 className="register-hero-title">
-              Environmental Health <br />
-              <span className="register-hero-highlight">Intelligence Platform</span>
+              Join VayuHealth <br />
+              <span className="register-hero-highlight">Environmental Platform</span>
             </h1>
             <p className="register-hero-subtitle">
-              Track air quality, get AI insights, and monitor disease risk in your area.
+              Create an account to monitor your local air quality and receive real-time predictive health directives.
             </p>
           </div>
 
-          {/* Register Form */}
+          {/* Register Form Card */}
           <div className="register-form-wrapper">
             <div className="register-form-header">
-              <h2>Create your account</h2>
-              <p>Join Vayu Health and start monitoring your environment</p>
+              <h2>Create Account</h2>
+              <p>Get started with environmental health intelligence</p>
             </div>
 
             {success ? (
-              <div className="register-success">
-                <CheckCircle2 size={24} />
-                <span>Account created successfully!</span>
-                <p>Redirecting to sign in...</p>
+              <div className="register-success-card">
+                <CheckCircle2 size={48} color="#10b981" />
+                <h3>Account Created Successfully!</h3>
+                <p>Redirecting you to sign in...</p>
               </div>
             ) : (
               <form onSubmit={submit} className="register-form">
+                {/* Full Name */}
                 <div className="register-form-group">
                   <label className="register-label">
-                    <User size={16} />
+                    <User size={15} />
                     Full Name
                   </label>
                   <input
@@ -93,29 +106,31 @@ export default function Register() {
                     required
                     value={form.name}
                     onChange={update('name')}
-                    placeholder="Alex Johnson"
+                    placeholder="Dr. Jane Smith / John Doe"
                     className="register-input"
                   />
                 </div>
 
+                {/* Email */}
                 <div className="register-form-group">
                   <label className="register-label">
-                    <Mail size={16} />
-                    Email
+                    <Mail size={15} />
+                    Email Address
                   </label>
                   <input
                     type="email"
                     required
                     value={form.email}
                     onChange={update('email')}
-                    placeholder="you@example.com"
+                    placeholder="name@example.com"
                     className="register-input"
                   />
                 </div>
 
+                {/* Password */}
                 <div className="register-form-group">
                   <label className="register-label">
-                    <Lock size={16} />
+                    <Lock size={15} />
                     Password
                   </label>
                   <input
@@ -128,42 +143,49 @@ export default function Register() {
                   />
                 </div>
 
+                {/* City and State in 2 cols */}
                 <div className="register-form-row">
-                  <div className="register-form-group register-form-group--half">
+                  <div className="register-form-group">
                     <label className="register-label">
-                      <MapPin size={16} />
+                      <Building2 size={15} />
                       City
                     </label>
                     <input
+                      type="text"
+                      required
                       value={form.city}
                       onChange={update('city')}
-                      placeholder="Mumbai"
+                      placeholder="e.g. Anand Vihar, Delhi"
                       className="register-input"
                     />
                   </div>
-                  <div className="register-form-group register-form-group--half">
+                  <div className="register-form-group">
                     <label className="register-label">
-                      <Building2 size={16} />
+                      <MapPin size={15} />
                       State
                     </label>
                     <input
+                      type="text"
+                      required
                       value={form.state}
                       onChange={update('state')}
-                      placeholder="Maharashtra"
+                      placeholder="e.g. Delhi"
                       className="register-input"
                     />
                   </div>
                 </div>
 
+                {/* District */}
                 <div className="register-form-group">
                   <label className="register-label">
-                    <MapPin size={16} />
+                    <MapPin size={15} />
                     District
                   </label>
                   <input
+                    type="text"
                     value={form.district}
                     onChange={update('district')}
-                    placeholder="District name (for health surveillance data)"
+                    placeholder="District name (e.g. East Delhi)"
                     className="register-input"
                   />
                 </div>
@@ -204,39 +226,95 @@ export default function Register() {
         </div>
       </div>
 
-      {/* Right Side - Forest Background */}
+      {/* Right Side - Dynamic Light-Theme Wind/Breeze Showcase */}
       <div className="register-right">
-        <div className="register-right-overlay">
-          <div className="register-right-content">
-            <div className="register-right-brand">
-              <div className="register-right-brand-icon">
-                <Leaf size={28} strokeWidth={2} />
-              </div>
-              <span>VayuHealth</span>
+        <AmbientWindBackground>
+          <div className="register-showcase-container">
+            {/* Live Indicator */}
+            <div className="register-live-pill">
+              <span className="register-live-dot" />
+              <span>Real-Time Environmental Intelligence Active</span>
             </div>
-            <div className="register-right-quote">
-              <p>"Clean air is not a luxury—it's a right."</p>
-              <span>Environmental Health Platform</span>
+
+            <h2 className="register-showcase-title">
+              Precision Air Quality & Clinical Health Protection
+            </h2>
+            <p className="register-showcase-desc">
+              High-resolution spatial air quality tracking, disease surveillance, and AI-guided safe pathfinding.
+            </p>
+
+            {/* Dynamic Interactive Cards */}
+            <div className="register-feature-cards">
+              <div className="register-feature-card">
+                <div className="register-feature-card__icon" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
+                  <Activity size={20} />
+                </div>
+                <div className="register-feature-card__text">
+                  <div className="register-card-head">
+                    <h4>Live Satellite AQI Surveillance</h4>
+                    <span className="register-chip register-chip--green">Active Feed</span>
+                  </div>
+                  <p>Real-time spatial air quality tracking across 50+ Indian regions</p>
+                </div>
+              </div>
+
+              <div className="register-feature-card">
+                <div className="register-feature-card__icon" style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}>
+                  <Shield size={20} />
+                </div>
+                <div className="register-feature-card__text">
+                  <div className="register-card-head">
+                    <h4>Predictive Disease Surveillance</h4>
+                    <span className="register-chip register-chip--blue">6D Matrix</span>
+                  </div>
+                  <p>Airborne health risk matrix & personalized clinical directives</p>
+                </div>
+              </div>
+
+              <div className="register-feature-card">
+                <div className="register-feature-card__icon" style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}>
+                  <Wind size={20} />
+                </div>
+                <div className="register-feature-card__text">
+                  <div className="register-card-head">
+                    <h4>Clean Air Safe Route Navigation</h4>
+                    <span className="register-chip register-chip--amber">AI Routing</span>
+                  </div>
+                  <p>AI-guided pathfinding avoiding high AQI and pollution spikes</p>
+                </div>
+              </div>
             </div>
-            <div className="register-right-stats">
-              <div className="register-right-stat">
-                <span className="register-right-stat-value">99.2%</span>
-                <span className="register-right-stat-label">Air Quality Accuracy</span>
+
+            {/* Live Stats */}
+            <div className="register-showcase-stats">
+              <div className="register-showcase-stat">
+                <span className="register-showcase-stat__val">99.4%</span>
+                <span className="register-showcase-stat__lbl">Data Accuracy</span>
               </div>
-              <div className="register-right-stat">
-                <span className="register-right-stat-value">50+</span>
-                <span className="register-right-stat-label">Cities Monitored</span>
+              <div className="register-showcase-stat">
+                <span className="register-showcase-stat__val">50+</span>
+                <span className="register-showcase-stat__lbl">Cities Tracked</span>
               </div>
+              <div className="register-showcase-stat">
+                <span className="register-showcase-stat__val">24/7</span>
+                <span className="register-showcase-stat__lbl">AI Surveillance</span>
+              </div>
+            </div>
+
+            <div className="register-showcase-quote-wrapper">
+              <p className="register-showcase-quote">
+                "Your health changes with the environment. Stay informed."
+              </p>
             </div>
           </div>
-        </div>
+        </AmbientWindBackground>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .register-container {
           display: flex;
           min-height: 100vh;
-          background: #f0f4f8;
+          background: #f8fafc;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
@@ -252,7 +330,7 @@ export default function Register() {
         }
 
         .register-content {
-          max-width: 500px;
+          max-width: 480px;
           width: 100%;
         }
 
@@ -261,13 +339,13 @@ export default function Register() {
           display: flex;
           align-items: center;
           gap: 10px;
-          margin-bottom: 32px;
+          margin-bottom: 24px;
         }
 
         .register-brand-icon {
-          width: 40px;
-          height: 40px;
-          background: #2f855a;
+          width: 38px;
+          height: 38px;
+          background: #0f766e;
           border-radius: 10px;
           display: flex;
           align-items: center;
@@ -277,14 +355,14 @@ export default function Register() {
 
         .register-brand-name {
           font-size: 18px;
-          font-weight: 700;
-          color: #1a202c;
+          font-weight: 800;
+          color: #0f172a;
           line-height: 1.2;
         }
 
         .register-brand-sub {
-          font-size: 11px;
-          color: #718096;
+          font-size: 11.5px;
+          color: #64748b;
         }
 
         /* Hero */
@@ -293,58 +371,61 @@ export default function Register() {
         }
 
         .register-hero-title {
-          font-size: 28px;
-          font-weight: 700;
-          color: #1a202c;
-          line-height: 1.2;
-          margin: 0 0 10px 0;
+          font-size: 26px;
+          font-weight: 800;
+          color: #0f172a;
+          line-height: 1.25;
+          margin: 0 0 8px 0;
+          letter-spacing: -0.5px;
         }
 
         .register-hero-highlight {
-          background: linear-gradient(135deg, #2b6cb0, #2f855a);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          color: #0d9488;
         }
 
         .register-hero-subtitle {
-          font-size: 14px;
-          color: #4a5568;
-          line-height: 1.6;
+          font-size: 13px;
+          color: #64748b;
+          line-height: 1.5;
           margin: 0;
         }
 
         /* Form Wrapper */
         .register-form-wrapper {
-          background: white;
-          border-radius: 12px;
+          background: #ffffff;
+          border-radius: 16px;
           border: 1px solid #e2e8f0;
-          padding: 28px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+          padding: 24px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
         }
 
         .register-form-header {
-          margin-bottom: 24px;
+          margin-bottom: 18px;
         }
 
         .register-form-header h2 {
-          font-size: 22px;
+          font-size: 18px;
           font-weight: 700;
-          color: #1a202c;
+          color: #0f172a;
           margin: 0 0 4px 0;
         }
 
         .register-form-header p {
-          font-size: 13px;
-          color: #718096;
+          font-size: 12px;
+          color: #64748b;
           margin: 0;
         }
 
-        /* Form */
         .register-form {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 14px;
+        }
+
+        .register-form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
         }
 
         .register-form-group {
@@ -353,110 +434,88 @@ export default function Register() {
           gap: 5px;
         }
 
-        .register-form-group--half {
-          flex: 1;
-        }
-
-        .register-form-row {
-          display: flex;
-          gap: 12px;
-        }
-
         .register-label {
           display: flex;
           align-items: center;
           gap: 6px;
           font-size: 12px;
           font-weight: 600;
-          color: #2d3748;
+          color: #334155;
         }
 
         .register-label svg {
-          color: #718096;
+          color: #64748b;
         }
 
         .register-input {
-          padding: 9px 12px;
+          padding: 10px 12px;
           border: 1px solid #e2e8f0;
           border-radius: 8px;
-          font-size: 13px;
-          color: #2d3748;
+          font-size: 13.5px;
+          color: #0f172a;
           transition: all 0.2s;
-          background: #f7fafc;
+          background: #f8fafc;
           width: 100%;
+          box-sizing: border-box;
         }
 
         .register-input:focus {
           outline: none;
-          border-color: #4299e1;
-          box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+          border-color: #0d9488;
+          box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
           background: white;
         }
 
-        .register-input::placeholder {
-          color: #a0aec0;
-          font-size: 13px;
+        .register-error {
+          padding: 10px 12px;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #dc2626;
+          border-radius: 8px;
+          font-size: 12px;
         }
 
-        /* Success */
-        .register-success {
+        .register-success-card {
+          text-align: center;
+          padding: 24px;
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
-          padding: 32px 20px;
-          text-align: center;
+          gap: 10px;
         }
 
-        .register-success svg {
-          color: #48bb78;
-          margin-bottom: 12px;
-        }
-
-        .register-success span {
+        .register-success-card h3 {
+          margin: 0;
+          color: #065f46;
           font-size: 18px;
-          font-weight: 600;
-          color: #2d3748;
         }
 
-        .register-success p {
-          font-size: 14px;
-          color: #718096;
-          margin-top: 4px;
+        .register-success-card p {
+          margin: 0;
+          color: #64748b;
+          font-size: 13px;
         }
 
-        /* Error */
-        .register-error {
-          padding: 8px 12px;
-          background: #fed7d7;
-          color: #9b2c2c;
-          border-radius: 6px;
-          font-size: 12px;
-          border-left: 3px solid #e53e3e;
-        }
-
-        /* Buttons */
         .register-submit-btn {
-          padding: 10px 20px;
-          background: #2f855a;
+          padding: 11px 20px;
+          background: #0f766e;
           color: white;
           border: none;
           border-radius: 8px;
           font-size: 14px;
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
-          transition: all 0.3s;
+          transition: all 0.2s;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
-          margin-top: 4px;
+          gap: 8px;
+          box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
         }
 
-        .register-submit-btn:hover:not(:disabled) {
-          background: #276749;
+        .register-submit-btn:hover {
+          background: #115e59;
           transform: translateY(-1px);
-          box-shadow: 0 4px 16px rgba(47, 133, 90, 0.25);
         }
 
         .register-submit-btn:disabled {
@@ -481,39 +540,35 @@ export default function Register() {
 
         .register-divider span {
           font-size: 11px;
-          color: #a0aec0;
-          font-weight: 500;
+          color: #94a3b8;
+          font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
         }
 
         .register-login-btn {
           padding: 10px 20px;
           background: transparent;
-          color: #2f855a;
-          border: 2px solid #2f855a;
+          color: #0f766e;
+          border: 1.5px solid #0f766e;
           border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
+          font-size: 13.5px;
+          font-weight: 700;
           cursor: pointer;
-          transition: all 0.3s;
+          transition: all 0.2s;
           text-align: center;
           text-decoration: none;
           display: inline-block;
         }
 
         .register-login-btn:hover {
-          background: #2f855a;
-          color: white;
-          transform: translateY(-1px);
+          background: #f0fdfa;
         }
 
-        /* Features Footer */
         .register-features-footer {
           display: flex;
           justify-content: center;
           gap: 14px;
-          margin-top: 20px;
+          margin-top: 18px;
           flex-wrap: wrap;
         }
 
@@ -522,135 +577,209 @@ export default function Register() {
           align-items: center;
           gap: 4px;
           font-size: 10px;
-          font-weight: 600;
-          color: #2d3748;
+          font-weight: 700;
+          color: #475569;
           letter-spacing: 0.3px;
         }
 
         .register-feature-tag svg {
-          color: #48bb78;
-          width: 12px;
-          height: 12px;
+          color: #0d9488;
         }
 
-        /* Right Side - Forest Background */
+        /* Right Side - Dynamic Showcase */
         .register-right {
-          flex: 1;
+          flex: 1.15;
           position: relative;
-          background: url(${forestBg}) center/cover no-repeat;
-          background-color: #1a202c;
           min-height: 100vh;
           display: none;
         }
 
-        /* Gradient overlay */
-        .register-right::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            to bottom,
-            rgba(26, 32, 44, 0.5) 0%,
-            rgba(26, 32, 44, 0.7) 50%,
-            rgba(26, 32, 44, 0.9) 100%
-          );
-          z-index: 1;
-        }
-
-        .register-right-overlay {
-          position: absolute;
-          inset: 0;
-          z-index: 2;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 48px;
-        }
-
-        .register-right-content {
-          max-width: 380px;
-          color: white;
-          text-align: center;
-        }
-
-        .register-right-brand {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          font-size: 22px;
-          font-weight: 700;
-          margin-bottom: 36px;
-        }
-
-        .register-right-brand-icon {
-          width: 40px;
-          height: 40px;
-          background: rgba(72, 187, 120, 0.2);
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .register-right-brand-icon svg {
-          color: #48bb78;
-        }
-
-        .register-right-quote {
-          margin-bottom: 40px;
-        }
-
-        .register-right-quote p {
-          font-size: 24px;
-          font-weight: 300;
-          line-height: 1.4;
-          margin: 0 0 6px 0;
-          font-style: italic;
-        }
-
-        .register-right-quote span {
-          font-size: 12px;
-          opacity: 0.7;
-          letter-spacing: 1px;
-        }
-
-        .register-right-stats {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          padding-top: 28px;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .register-right-stat {
+        .register-showcase-container {
+          max-width: 480px;
+          width: 100%;
           display: flex;
           flex-direction: column;
+          gap: 20px;
         }
 
-        .register-right-stat-value {
+        .register-live-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.9);
+          border: 1.5px solid #a7f3d0;
+          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+          backdrop-filter: blur(12px);
+          padding: 7px 16px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 800;
+          color: #065f46;
+          width: fit-content;
+        }
+
+        .register-live-dot {
+          width: 9px;
+          height: 9px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 12px #10b981;
+          animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        .register-showcase-title {
           font-size: 28px;
+          font-weight: 800;
+          line-height: 1.25;
+          margin: 0;
+          letter-spacing: -0.6px;
+          color: #064e3b;
+        }
+
+        .register-showcase-desc {
+          font-size: 13.5px;
+          color: #334155;
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        .register-feature-cards {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .register-feature-card {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          padding: 15px 18px;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1.5px solid rgba(255, 255, 255, 0.98);
+          backdrop-filter: blur(16px);
+          border-radius: 16px;
+          box-shadow: 0 6px 20px rgba(15, 118, 110, 0.07), 0 1px 3px rgba(0, 0, 0, 0.03);
+          transition: all 0.25s ease;
+        }
+
+        .register-feature-card:hover {
+          background: #ffffff;
+          transform: translateY(-2px);
+          box-shadow: 0 10px 28px rgba(15, 118, 110, 0.14);
+          border-color: #a7f3d0;
+        }
+
+        .register-feature-card__icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .register-card-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+        }
+
+        .register-feature-card__text {
+          flex: 1;
+        }
+
+        .register-feature-card__text h4 {
+          margin: 0;
+          font-size: 14px;
           font-weight: 700;
-          color: #48bb78;
+          color: #0f172a;
         }
 
-        .register-right-stat-label {
+        .register-chip {
+          font-size: 10px;
+          font-weight: 700;
+          padding: 2px 8px;
+          border-radius: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.4px;
+        }
+
+        .register-chip--green {
+          background: #dcfce7;
+          color: #15803d;
+        }
+
+        .register-chip--blue {
+          background: #dbeafe;
+          color: #1d4ed8;
+        }
+
+        .register-chip--amber {
+          background: #fef3c7;
+          color: #b45309;
+        }
+
+        .register-feature-card__text p {
+          margin: 4px 0 0 0;
+          font-size: 12px;
+          color: #475569;
+          line-height: 1.35;
+        }
+
+        .register-showcase-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+          padding-top: 16px;
+          border-top: 1.5px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .register-showcase-stat {
+          display: flex;
+          flex-direction: column;
+          background: rgba(255, 255, 255, 0.85);
+          padding: 10px 14px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.9);
+          box-shadow: 0 2px 8px rgba(15, 118, 110, 0.05);
+        }
+
+        .register-showcase-stat__val {
+          font-size: 23px;
+          font-weight: 800;
+          color: #0f766e;
+          line-height: 1;
+        }
+
+        .register-showcase-stat__lbl {
           font-size: 11px;
-          opacity: 0.7;
+          color: #475569;
           margin-top: 4px;
+          font-weight: 700;
         }
 
-        /* Animations */
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        .register-showcase-quote-wrapper {
+          background: rgba(255, 255, 255, 0.8);
+          border-radius: 10px;
+          padding: 10px 14px;
+          border-left: 3.5px solid #10b981;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .register-showcase-quote {
+          font-size: 12.5px;
+          font-style: italic;
+          color: #065f46;
+          margin: 0;
+          font-weight: 600;
         }
 
         .spin {
           animation: spin 1s linear infinite;
         }
 
-        /* Responsive */
         @media (min-width: 1024px) {
           .register-right {
             display: block;
@@ -698,29 +827,13 @@ export default function Register() {
           }
 
           .register-form-row {
-            flex-direction: column;
-            gap: 16px;
+            grid-template-columns: 1fr;
           }
 
           .register-features-footer {
             flex-direction: column;
             align-items: center;
             gap: 6px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .register-hero-title {
-            font-size: 20px;
-          }
-
-          .register-form-header h2 {
-            font-size: 20px;
-          }
-
-          .register-input {
-            font-size: 14px;
-            padding: 10px 12px;
           }
         }
       `}</style>

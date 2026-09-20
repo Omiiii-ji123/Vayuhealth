@@ -58,7 +58,7 @@ export default function Diseases() {
   const loading = allLoading || (!skipCategory && catLoading) || (!skipTransmission && transLoading);
 
   return (
-    <Layout title="Diseases" subtitle="Explore environmentally-linked diseases, transmission types, and remedies.">
+    <Layout title="Diseases" subtitle="Explore environmentally-linked diseases and transmission types.">
       <Card className="section-card">
         <div className="map-toolbar">
           <div className="city-search city-search--wide">

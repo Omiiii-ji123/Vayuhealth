@@ -1,4 +1,35 @@
 /* ===================== Layout shell ===================== */
+.sih-ps82-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(249, 115, 22, 0.18));
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sih-ps82-badge-btn:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.28), rgba(249, 115, 22, 0.28));
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+}
+
+.sih-live-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+  animation: pulse 1.5s infinite;
+}
+
 .app-shell {
   display: flex;
   min-height: 100vh;
@@ -344,12 +375,16 @@
 
 .grid-2col {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
+  grid-template-columns: 1.25fr 1fr;
   gap: 20px;
+  align-items: start;
 }
 
 .grid-2col--wide {
+  display: grid;
   grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+  align-items: start;
 }
 
 .grid-3col {
@@ -1218,4 +1253,174 @@
   .app-shell__content { padding: 18px 16px 40px; }
   .grid-3col { grid-template-columns: 1fr; }
   .auth-form__row { grid-template-columns: 1fr; }
+}
+
+/* =========================================================================
+   MINISTRY UNIFIED THEME TOKENS & OVERRIDES (MoEFCC & CPCB STANDARDIZATION)
+   ========================================================================= */
+
+/* Unified Card & Container Standards */
+.card,
+.section-card,
+.telemetry-card,
+.forecast-chart-card,
+.inversion-gauge-card,
+.source-apportionment-card,
+.admin-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-lg);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+[data-theme="dark"] .card,
+[data-theme="dark"] .section-card,
+[data-theme="dark"] .telemetry-card,
+[data-theme="dark"] .forecast-chart-card,
+[data-theme="dark"] .inversion-gauge-card,
+[data-theme="dark"] .source-apportionment-card,
+[data-theme="dark"] .admin-card,
+[data-theme="dark"] .sa-sector-card,
+[data-theme="dark"] .inversion-prop {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
+[data-theme="light"] .card,
+[data-theme="light"] .section-card,
+[data-theme="light"] .telemetry-card,
+[data-theme="light"] .forecast-chart-card,
+[data-theme="light"] .inversion-gauge-card,
+[data-theme="light"] .source-apportionment-card,
+[data-theme="light"] .admin-card,
+[data-theme="light"] .sa-sector-card,
+[data-theme="light"] .inversion-prop {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Recharts Universal Theme Standardization */
+.recharts-default-tooltip {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--shadow-pop) !important;
+  padding: 10px 14px !important;
+}
+
+.recharts-tooltip-item,
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value {
+  color: var(--color-text) !important;
+  font-weight: 600;
+}
+
+.recharts-tooltip-label {
+  color: var(--color-text) !important;
+  font-weight: 700;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+.recharts-cartesian-grid line {
+  stroke: var(--color-border) !important;
+  stroke-opacity: 0.85;
+}
+
+.recharts-text,
+.recharts-cartesian-axis-tick text {
+  fill: var(--color-text-muted) !important;
+  font-size: 11px;
+}
+
+/* Leaflet Map Panels & Popups Theme Inheritance */
+.leaflet-popup-content-wrapper {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--color-surface) !important;
+}
+
+.leaflet-popup-content {
+  color: var(--color-text) !important;
+  font-family: inherit !important;
+}
+
+.leaflet-control-zoom a {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--color-bg) !important;
+}
+
+/* CPCB CAAQMS Live Sensor Status Badge */
+.cpcb-live-feed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #059669;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
+}
+
+[data-theme="dark"] .cpcb-live-feed-badge {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #34d399;
+}
+
+.cpcb-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: liveDotPulse 2s infinite ease-in-out;
+}
+
+@keyframes liveDotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.65; }
+}
+
+/* Statutory GRAP Mandate Notification Action Button */
+.export-grap-mandate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+  color: #ffffff;
+  border: 1px solid #0d9488;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(13, 148, 136, 0.25);
+}
+
+.export-grap-mandate-btn:hover {
+  background: linear-gradient(135deg, #115e59, #0f766e);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
 }

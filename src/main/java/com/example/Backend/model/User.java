@@ -57,4 +57,7 @@ public class User {
     private Location location;
 
     private String fcmToken;
+
+    @Builder.Default
+    private String role = "USER";
 }

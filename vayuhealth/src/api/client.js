@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Base URL of the Spring Boot backend. All 21 REST endpoints are served from here.
-export const API_BASE_URL = 'http://localhost:8081';
+// Base URL of the Spring Boot backend. Configurable via VITE_API_URL in production.
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
 
 const client = axios.create({
   baseURL: API_BASE_URL,

@@ -2,7 +2,7 @@ import { getAqiBand } from '../utils/aqi';
 
 export default function AqiGauge({ value = 0, size = 180 }) {
   const band = getAqiBand(value);
-  const pct = Math.min(Math.max(value, 0), 300) / 300;
+  const pct = Math.min(Math.max(value, 0), 500) / 500;
   const radius = (size - 20) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - pct);

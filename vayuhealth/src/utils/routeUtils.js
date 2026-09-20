@@ -47,7 +47,7 @@ export const formatDistance = (meters) => {
  */
 export const findCoordinates = (locationStr) => {
   if (!locationStr) {
-    return { lat: 19.2183, lng: 73.0869, name: "Dombivli" };
+    return { lat: 28.6502, lng: 77.3027, name: "Anand Vihar, Delhi" };
   }
 
   const strLower = locationStr.toLowerCase().trim();

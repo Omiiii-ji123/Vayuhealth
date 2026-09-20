@@ -45,7 +45,7 @@ export default function DiseaseDetail() {
   const diseaseName = getDiseaseName();
 
   return (
-    <Layout title="Disease Detail" subtitle="Condition overview, symptoms, and recommended remedies.">
+    <Layout title="Disease Detail" subtitle="Condition overview and clinical symptoms.">
       <div className="detail-actions">
         <button className="btn btn--ghost btn--sm" onClick={() => navigate('/diseases')}>
           <ArrowLeft size={14} /> Back to diseases
@@ -80,37 +80,18 @@ export default function DiseaseDetail() {
             {disease?.description && <p className="muted-text" style={{ lineHeight: 1.6 }}>{disease.description}</p>}
           </Card>
 
-          <div className="grid-2col">
-            <Card className="section-card">
-              <div className="card-head">
-                <h3 className="section-title"><Activity size={16} /> Symptoms</h3>
-              </div>
-              {symptoms && symptoms.length ? (
-                <ul className="bullet-list">
-                  {symptoms.map((s, i) => <li key={i}>{typeof s === 'string' ? s : JSON.stringify(s)}</li>)}
-                </ul>
-              ) : (
-                <p className="muted-text">No symptom data available for this condition.</p>
-              )}
-            </Card>
-
-            <Card className="section-card">
-              <div className="card-head">
-                <h3 className="section-title"><Pill size={16} /> Remedies</h3>
-              </div>
-              {remediesLoading ? (
-                <Loader label="Fetching remedies..." />
-              ) : remediesError ? (
-                <ErrorState message={remediesError.message} />
-              ) : remedies && remedies.length ? (
-                <ul className="bullet-list">
-                  {remedies.map((r, i) => <li key={i}>{typeof r === 'string' ? r : JSON.stringify(r)}</li>)}
-                </ul>
-              ) : (
-                <p className="muted-text">No remedy data available for this condition.</p>
-              )}
-            </Card>
-          </div>
+          <Card className="section-card">
+            <div className="card-head">
+              <h3 className="section-title"><Activity size={16} /> Symptoms</h3>
+            </div>
+            {symptoms && symptoms.length ? (
+              <ul className="bullet-list">
+                {symptoms.map((s, i) => <li key={i}>{typeof s === 'string' ? s : JSON.stringify(s)}</li>)}
+              </ul>
+            ) : (
+              <p className="muted-text">No symptom data available for this condition.</p>
+            )}
+          </Card>
 
           <Card className="section-card notice-card">
             <ShieldAlert size={16} />

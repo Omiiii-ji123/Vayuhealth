@@ -1,23 +1,25 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutGrid, Map, Sparkles, Stethoscope, User, Settings as SettingsIcon,
-  LogOut, Wind, Activity,
+  LayoutGrid, Map, Settings as SettingsIcon,
+  LogOut, Wind, Activity, TrendingUp, ShieldAlert, Cpu,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-const NAV_ITEMS = [
-  { to: '/', label: 'Dashboard', icon: LayoutGrid, end: true },
-  { to: '/air-quality-map', label: 'Air Quality Map', icon: Map },
-  { to: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
-  { to: '/diseases', label: 'Diseases', icon: Stethoscope },
-  { to: '/surveillance', label: 'Surveillance', icon: Activity },
-  { to: '/profile', label: 'Profile', icon: User },
-  { to: '/settings', label: 'Settings', icon: SettingsIcon },
-];
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Sidebar({ mobileOpen, onCloseMobile }) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
+
+  const NAV_ITEMS = [
+    { to: '/dashboard', key: 'nav.home', label: 'Home Page', icon: LayoutGrid, end: true },
+    { to: '/admin-dashboard', key: 'nav.adminDashboard', label: 'Admin Command', icon: ShieldAlert },
+    { to: '/delhi-forecast', key: 'nav.delhiForecast', label: '72H Coupled Forecast', icon: TrendingUp },
+    { to: '/air-quality-map', key: 'nav.airQualityMap', label: 'Air Quality Map', icon: Map },
+    { to: '/surveillance', key: 'nav.surveillance', label: 'Surveillance', icon: Activity },
+    { to: '/station-diagnostics', key: 'nav.stationDiagnostics', label: 'Station Diagnostics', icon: Cpu },
+    { to: '/settings', key: 'nav.settings', label: 'Settings', icon: SettingsIcon },
+  ];
 
   const handleLogout = () => {
     logout();
@@ -33,13 +35,13 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
             <Wind size={20} strokeWidth={2.5} />
           </div>
           <div>
-            <div className="sidebar__brand-name">VayuHealth</div>
-            <div className="sidebar__brand-sub">Environmental Health</div>
+            <div className="sidebar__brand-name">VayuHealth CPCB</div>
+            <div className="sidebar__brand-sub">Air Quality Regulatory Authority</div>
           </div>
         </div>
 
         <nav className="sidebar__nav">
-          {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+          {NAV_ITEMS.map(({ to, key, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
@@ -48,7 +50,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
               className={({ isActive }) => `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`}
             >
               <Icon size={18} strokeWidth={2} />
-              <span>{label}</span>
+              <span>{t(key, label)}</span>
             </NavLink>
           ))}
         </nav>
@@ -56,11 +58,11 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
         <div className="sidebar__footer">
           <button className="sidebar__link sidebar__logout" onClick={handleLogout}>
             <LogOut size={18} strokeWidth={2} />
-            <span>Logout</span>
+            <span>{t('nav.logout', 'Logout')}</span>
           </button>
           <div className="sidebar__status">
             <span className="status-dot" />
-            System Status: Active
+            {t('nav.systemActive', 'System Status: Active')}
           </div>
         </div>
       </aside>

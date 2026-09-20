@@ -4,6 +4,88 @@
  */
 
 export const indiaLocations = [
+  // ==================== DELHI NCR (PRIMARY FOCUS) ====================
+  { 
+    name: "Anand Vihar, Delhi", 
+    state: "Delhi", 
+    lat: 28.6469, 
+    lng: 77.3160, 
+    aqi: 418, 
+    status: "Severe", 
+    cases: "48,200" 
+  },
+  { 
+    name: "Connaught Place / ITO", 
+    state: "Delhi", 
+    lat: 28.6315, 
+    lng: 77.2410, 
+    aqi: 345, 
+    status: "Very Poor", 
+    cases: "36,400" 
+  },
+  { 
+    name: "Dwarka Sector 8", 
+    state: "Delhi", 
+    lat: 28.5710, 
+    lng: 77.0700, 
+    aqi: 310, 
+    status: "Very Poor", 
+    cases: "28,100" 
+  },
+  { 
+    name: "R.K. Puram, Delhi", 
+    state: "Delhi", 
+    lat: 28.5630, 
+    lng: 77.1860, 
+    aqi: 360, 
+    status: "Very Poor", 
+    cases: "31,800" 
+  },
+  { 
+    name: "Punjabi Bagh, Delhi", 
+    state: "Delhi", 
+    lat: 28.6680, 
+    lng: 77.1240, 
+    aqi: 388, 
+    status: "Very Poor", 
+    cases: "34,200" 
+  },
+  { 
+    name: "Rohini Sector 16", 
+    state: "Delhi", 
+    lat: 28.7320, 
+    lng: 77.1180, 
+    aqi: 405, 
+    status: "Severe", 
+    cases: "39,500" 
+  },
+  { 
+    name: "Noida Sector 62", 
+    state: "Uttar Pradesh", 
+    lat: 28.6270, 
+    lng: 77.3620, 
+    aqi: 375, 
+    status: "Very Poor", 
+    cases: "29,400" 
+  },
+  { 
+    name: "Gurugram Sector 51", 
+    state: "Haryana", 
+    lat: 28.4310, 
+    lng: 77.0720, 
+    aqi: 325, 
+    status: "Very Poor", 
+    cases: "26,800" 
+  },
+  { 
+    name: "Ghaziabad Vasundhara", 
+    state: "Uttar Pradesh", 
+    lat: 28.6600, 
+    lng: 77.3820, 
+    aqi: 425, 
+    status: "Severe", 
+    cases: "41,200" 
+  },
   // ==================== MAHARASHTRA ====================
   { 
     name: "Dombivli", 
