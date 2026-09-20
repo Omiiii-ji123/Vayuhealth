@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: vayuhealth-backend
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/Backend-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: JAVA_VERSION
+        value: 21
+      - key: SPRING_DATA_MONGODB_URI
+        value: mongodb+srv://fukeraju03_db_user:idqNbNhtGdkyRy3I@cluster0.sjoi1fe.mongodb.net/vayuhealth_cpcb?appName=Cluster0
+      - key: MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS
+        value: always
+
+  - type: web
+    name: vayuhealth-web
+    env: static
+    plan: free
+    rootDir: vayuhealth
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://vayuhealth-backend.onrender.com
+      - key: VITE_API_URL
+        value: https://vayuhealth-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
