@@ -4,6 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Dependencies
+node_modules/
+**/node_modules/
+.env.local
+*.log
+
 ### STS ###
 .apt_generated
 .classpath
