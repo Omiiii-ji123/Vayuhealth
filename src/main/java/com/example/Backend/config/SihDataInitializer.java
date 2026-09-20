@@ -37,10 +37,14 @@ public class SihDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        seedUsers();
-        seedAqiData();
-        seedSurveillanceData();
-        System.out.println(">>> SIH auth/AQI/surveillance seed complete");
+        try {
+            seedUsers();
+            seedAqiData();
+            seedSurveillanceData();
+            System.out.println(">>> SIH auth/AQI/surveillance seed complete");
+        } catch (Exception e) {
+            System.out.println(">>> SIH seed non-blocking fallback (MongoDB unavailable or initialization skipped): " + e.getMessage());
+        }
     }
 
     private void seedUsers() {

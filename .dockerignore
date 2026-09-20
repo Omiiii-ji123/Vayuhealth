@@ -1,0 +1,7 @@
+target/
+.git
+.gitignore
+vayuhealth/node_modules/
+vayuhealth/dist/
+.idea/
+*.iml
