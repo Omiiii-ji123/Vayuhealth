@@ -1,29 +1,27 @@
 services:
   - type: web
     name: vayuhealth-backend
-    env: java
+    runtime: docker
     plan: free
-    buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -jar target/Backend-0.0.1-SNAPSHOT.jar
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
     envVars:
-      - key: JAVA_VERSION
-        value: 21
       - key: SPRING_DATA_MONGODB_URI
-        value: mongodb+srv://fukeraju03_db_user:idqNbNhtGdkyRy3I@cluster0.sjoi1fe.mongodb.net/vayuhealth_cpcb?appName=Cluster0
-      - key: MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS
-        value: always
+        sync: false
+      - key: WAQI_API_TOKEN
+        sync: false
 
   - type: web
     name: vayuhealth-web
-    env: static
-    plan: free
+    runtime: static
     rootDir: vayuhealth
-    buildCommand: npm run build
+    buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
     envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
       - key: VITE_API_BASE_URL
-        value: https://vayuhealth-backend.onrender.com
-      - key: VITE_API_URL
         value: https://vayuhealth-backend.onrender.com
     routes:
       - type: rewrite
